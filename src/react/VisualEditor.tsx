@@ -292,6 +292,95 @@ export function VisualEditor({
     setSelectedEdge(null);
   }, []);
 
+  // When a message node is dragged, snap to nearest participant pair and update From/To
+  const onNodeDragStop = useCallback(
+    (_: unknown, node: Node) => {
+      if (model.type !== "sequence" || !node.data?.isMessage) return;
+
+      setNodes((nds) => {
+        const participants = nds.filter((n) => n.data?.isParticipant);
+        if (participants.length < 2) return nds;
+
+        const SPACING = 250;
+        const P_WIDTH = 120;
+
+        // Find the closest participant lifeline to the message's left edge
+        const msgX = node.position.x;
+        const msgRight = msgX + ((node.data?.width as number) || SPACING);
+
+        // Find nearest participant to left edge and right edge
+        let nearestLeft = participants[0];
+        let nearestRight = participants[participants.length - 1];
+        let minDistLeft = Infinity;
+        let minDistRight = Infinity;
+
+        for (const p of participants) {
+          const lifelineX = p.position.x + P_WIDTH / 2;
+          const distLeft = Math.abs(lifelineX - msgX);
+          const distRight = Math.abs(lifelineX - msgRight);
+          if (distLeft < minDistLeft) {
+            minDistLeft = distLeft;
+            nearestLeft = p;
+          }
+          if (distRight < minDistRight) {
+            minDistRight = distRight;
+            nearestRight = p;
+          }
+        }
+
+        if (nearestLeft.id === nearestRight.id) {
+          // If snapped to same participant, pick the next one
+          const idx = participants.indexOf(nearestLeft);
+          if (idx < participants.length - 1) {
+            nearestRight = participants[idx + 1];
+          } else if (idx > 0) {
+            nearestLeft = participants[idx - 1];
+          }
+        }
+
+        const leftP = participants.indexOf(nearestLeft) <= participants.indexOf(nearestRight) ? nearestLeft : nearestRight;
+        const rightP = leftP === nearestLeft ? nearestRight : nearestLeft;
+
+        // Determine direction: was the original source on the left or right?
+        const oldGoesRight = node.data?.goesRight as boolean;
+        const newSrc = oldGoesRight ? leftP.id : rightP.id;
+        const newTgt = oldGoesRight ? rightP.id : leftP.id;
+
+        const leftLifelineX = leftP.position.x + P_WIDTH / 2;
+        const rightLifelineX = rightP.position.x + P_WIDTH / 2;
+        const newWidth = rightLifelineX - leftLifelineX;
+        const newGoesRight = participants.indexOf(
+          participants.find((p) => p.id === newTgt)!
+        ) > participants.indexOf(
+          participants.find((p) => p.id === newSrc)!
+        );
+
+        const updated = nds.map((n) => {
+          if (n.id !== node.id) return n;
+          return {
+            ...n,
+            position: { x: leftLifelineX, y: n.position.y },
+            data: {
+              ...n.data,
+              sourceParticipant: newSrc,
+              targetParticipant: newTgt,
+              goesRight: newGoesRight,
+              width: newWidth,
+            },
+          };
+        });
+
+        // Update selected node state too
+        const updatedNode = updated.find((n) => n.id === node.id);
+        if (updatedNode) setSelectedNode(updatedNode);
+
+        setTimeout(() => emitChange(updated, edges), 0);
+        return updated;
+      });
+    },
+    [model.type, setNodes, edges, emitChange, setSelectedNode]
+  );
+
   return (
     <div className="mve-visual-editor" style={{ height }} data-theme={theme}>
       <ReactFlow
@@ -301,6 +390,7 @@ export function VisualEditor({
         onEdgesChange={readOnly ? undefined : onEdgesChange}
         onConnect={readOnly ? undefined : onConnect}
         onNodeClick={onNodeClick}
+        onNodeDragStop={onNodeDragStop}
         onEdgeClick={onEdgeClick}
         onPaneClick={onPaneClick}
         defaultEdgeOptions={defaultEdgeOptions}
