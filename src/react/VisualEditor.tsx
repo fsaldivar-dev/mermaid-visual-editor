@@ -92,14 +92,15 @@ export function VisualEditor({
           const leftIdx = Math.min(srcIdx, tgtIdx);
           const rightIdx = Math.max(srcIdx, tgtIdx);
 
-          const SPACING = 220;
-          const P_WIDTH = 100;
+          const SPACING = 250;
+          const P_WIDTH = 120;
           const MSG_Y_START = 80;
           const MSG_Y_STEP = 60;
 
           const msgY = MSG_Y_START + messages.length * MSG_Y_STEP;
           const leftLifelineX = leftIdx * SPACING + P_WIDTH / 2;
-          const msgWidth = (rightIdx - leftIdx) * SPACING;
+          const rightLifelineX = rightIdx * SPACING + P_WIDTH / 2;
+          const msgWidth = rightLifelineX - leftLifelineX;
 
           const msgId = `msg_${Date.now().toString(36)}`;
           const newMsg: Node = {
@@ -229,14 +230,16 @@ export function VisualEditor({
             const leftIdx = Math.min(srcIdx, tgtIdx);
             const rightIdx = Math.max(srcIdx, tgtIdx);
 
-            const SPACING = 220;
-            const P_WIDTH = 100;
+            const SPACING = 250;
+            const P_WIDTH = 120;
+
+            const leftLifelineX = leftIdx * SPACING + P_WIDTH / 2;
+            const rightLifelineX = rightIdx * SPACING + P_WIDTH / 2;
 
             newData.goesRight = tgtIdx > srcIdx;
             newData.isReply = msgType.includes("--");
-            newData.width = Math.max((rightIdx - leftIdx) * SPACING, SPACING);
+            newData.width = Math.max(rightLifelineX - leftLifelineX, SPACING);
 
-            const leftLifelineX = leftIdx * SPACING + P_WIDTH / 2;
             return { ...n, data: newData, position: { ...n.position, x: leftLifelineX } };
           }
 

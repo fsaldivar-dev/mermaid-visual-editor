@@ -1,7 +1,7 @@
 import type { DiagramModel, DiagramElement } from "../model/types";
 
-const PARTICIPANT_SPACING = 220;
-const PARTICIPANT_WIDTH = 100;
+const PARTICIPANT_SPACING = 250;
+const PARTICIPANT_BOX_WIDTH = 120;
 const MESSAGE_Y_START = 80;
 const MESSAGE_Y_STEP = 60;
 
@@ -59,17 +59,18 @@ export function parseSequenceDiagram(text: string): DiagramModel {
     const isReply = msg.type.includes("--");
     const goesRight = tgtIdx > srcIdx;
 
-    // Lifeline center X = participantX + PARTICIPANT_WIDTH/2
-    // Message X starts at left lifeline center
-    const leftLifelineX = leftIdx * PARTICIPANT_SPACING + PARTICIPANT_WIDTH / 2;
-    const msgWidth = (rightIdx - leftIdx) * PARTICIPANT_SPACING;
+    // Lifeline center X for each participant = participantX + BOX_WIDTH/2
+    // Message spans from left lifeline to right lifeline
+    const leftLifelineCenterX = leftIdx * PARTICIPANT_SPACING + PARTICIPANT_BOX_WIDTH / 2;
+    const rightLifelineCenterX = rightIdx * PARTICIPANT_SPACING + PARTICIPANT_BOX_WIDTH / 2;
+    const msgWidth = rightLifelineCenterX - leftLifelineCenterX;
     const msgY = MESSAGE_Y_START + i * MESSAGE_Y_STEP;
 
     elements.push({
       id: `msg_${i}`,
       label: msg.label,
       shape: "message",
-      position: { x: leftLifelineX, y: msgY },
+      position: { x: leftLifelineCenterX, y: msgY },
       properties: {
         isMessage: true,
         messageType: msg.type,
