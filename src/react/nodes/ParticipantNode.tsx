@@ -16,9 +16,21 @@ export function ParticipantNode({ data, selected }: ParticipantNodeProps) {
       <div
         className="mve-participant-lifeline"
         style={{ height: lifelineHeight }}
-      />
-      <Handle type="target" position={Position.Left} />
-      <Handle type="source" position={Position.Right} />
+      >
+        {/* Connection handle on the lifeline — visible as a subtle dot */}
+        <Handle
+          type="source"
+          position={Position.Right}
+          id="lifeline-source"
+          className="mve-lifeline-handle"
+        />
+        <Handle
+          type="target"
+          position={Position.Left}
+          id="lifeline-target"
+          className="mve-lifeline-handle"
+        />
+      </div>
     </div>
   );
 }

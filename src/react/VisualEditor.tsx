@@ -78,6 +78,54 @@ export function VisualEditor({
 
   const onConnect = useCallback(
     (connection: Connection) => {
+      // Sequence diagram: create a message node instead of an edge
+      if (model.type === "sequence" && connection.source && connection.target) {
+        const src = connection.source;
+        const tgt = connection.target;
+        if (src === tgt) return; // no self-messages
+
+        setNodes((nds) => {
+          const participants = nds.filter((n) => n.data?.isParticipant);
+          const messages = nds.filter((n) => n.data?.isMessage);
+          const srcIdx = participants.findIndex((p) => p.id === src);
+          const tgtIdx = participants.findIndex((p) => p.id === tgt);
+          const leftIdx = Math.min(srcIdx, tgtIdx);
+          const rightIdx = Math.max(srcIdx, tgtIdx);
+
+          const SPACING = 220;
+          const P_WIDTH = 100;
+          const MSG_Y_START = 80;
+          const MSG_Y_STEP = 60;
+
+          const msgY = MSG_Y_START + messages.length * MSG_Y_STEP;
+          const leftLifelineX = leftIdx * SPACING + P_WIDTH / 2;
+          const msgWidth = (rightIdx - leftIdx) * SPACING;
+
+          const msgId = `msg_${Date.now().toString(36)}`;
+          const newMsg: Node = {
+            id: msgId,
+            type: "message",
+            position: { x: leftLifelineX, y: msgY },
+            data: {
+              label: "New message",
+              isMessage: true,
+              messageType: "->>",
+              isReply: false,
+              goesRight: tgtIdx > srcIdx,
+              width: msgWidth,
+              sourceParticipant: src,
+              targetParticipant: tgt,
+            },
+          };
+
+          const updated = [...nds, newMsg];
+          setTimeout(() => emitChange(updated, edges), 0);
+          return updated;
+        });
+        return;
+      }
+
+      // Default: add edge
       setEdges((eds) => {
         const updated = addEdge(
           { ...connection, ...defaultEdgeOptions },
@@ -87,7 +135,7 @@ export function VisualEditor({
         return updated;
       });
     },
-    [setEdges, nodes, emitChange]
+    [setEdges, setNodes, nodes, edges, emitChange, model.type]
   );
 
   const addNode = useCallback(

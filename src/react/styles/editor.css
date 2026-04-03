@@ -580,12 +580,9 @@
   border-color: #6cb4ff;
 }
 
-/* Hide handles on participants too — they're not connectable in sequence */
-.mve-participant-node .react-flow__handle {
+/* Hide default handles on participant box */
+.mve-participant-node > .react-flow__handle {
   display: none !important;
-  width: 0 !important;
-  height: 0 !important;
-  opacity: 0 !important;
 }
 
 .mve-participant-lifeline {
@@ -593,6 +590,24 @@
   background: rgba(0, 0, 0, 0.2);
   margin-top: 0;
   z-index: 1;
+  position: relative;
+}
+
+/* Lifeline connection handles — subtle dots on the lifeline */
+.mve-lifeline-handle.react-flow__handle {
+  display: block !important;
+  width: 12px !important;
+  height: 12px !important;
+  opacity: 0 !important;
+  background: #0071e3 !important;
+  border: 2px solid #fff !important;
+  top: 50% !important;
+  transition: opacity 0.15s;
+}
+
+.mve-participant-node:hover .mve-lifeline-handle.react-flow__handle,
+.mve-lifeline-handle.react-flow__handle.connecting {
+  opacity: 1 !important;
 }
 
 [data-theme="dark"] .mve-participant-lifeline {
