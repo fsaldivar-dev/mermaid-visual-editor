@@ -1,3 +1,5 @@
+import type { DiagramType } from "../core/model/types";
+
 export type EditorMode = "visual" | "split" | "inline";
 
 interface Shape {
@@ -6,32 +8,70 @@ interface Shape {
   icon: string;
 }
 
-const SHAPES: Shape[] = [
-  { type: "rect", label: "Rectangle", icon: "\u25ad" },
-  { type: "rounded", label: "Rounded", icon: "\u25a2" },
-  { type: "diamond", label: "Decision", icon: "\u25c7" },
-  { type: "circle", label: "Circle", icon: "\u25cb" },
+const SHAPES_BY_TYPE: Record<string, Shape[]> = {
+  flowchart: [
+    { type: "rect", label: "Rectangle", icon: "\u25ad" },
+    { type: "rounded", label: "Rounded", icon: "\u25a2" },
+    { type: "diamond", label: "Decision", icon: "\u25c7" },
+    { type: "circle", label: "Circle", icon: "\u25cb" },
+  ],
+  state: [
+    { type: "rounded", label: "State", icon: "\u25a2" },
+  ],
+  class: [
+    { type: "rect", label: "Class", icon: "\u25ad" },
+  ],
+  er: [
+    { type: "rect", label: "Entity", icon: "\u25ad" },
+  ],
+  sequence: [
+    { type: "rect", label: "Participant", icon: "\u25ad" },
+  ],
+  mindmap: [
+    { type: "rounded", label: "Topic", icon: "\u25cb" },
+  ],
+};
+
+const DEFAULT_SHAPES: Shape[] = [
+  { type: "rect", label: "Node", icon: "\u25ad" },
 ];
 
 interface EditorToolbarProps {
   mode: EditorMode;
+  diagramType?: DiagramType;
   onModeChange?: (mode: EditorMode) => void;
   onAddNode?: (type: string) => void;
   onDelete?: () => void;
   onLayout?: () => void;
+  onUndo?: () => void;
+  onRedo?: () => void;
+  canUndo?: boolean;
+  canRedo?: boolean;
+  onExportPng?: () => void;
+  onExportSvg?: () => void;
   theme?: "light" | "dark";
 }
 
 export function EditorToolbar({
   mode,
+  diagramType = "flowchart",
   onModeChange,
   onAddNode,
   onDelete,
   onLayout,
+  onUndo,
+  onRedo,
+  canUndo = false,
+  canRedo = false,
+  onExportPng,
+  onExportSvg,
   theme = "light",
 }: EditorToolbarProps) {
+  const shapes = SHAPES_BY_TYPE[diagramType] || DEFAULT_SHAPES;
+  const canAddNodes = !["pie", "gantt", "timeline", "journey", "gitgraph"].includes(diagramType);
+
   return (
-    <div className="mve-toolbar" data-theme={theme}>
+    <div className="mve-toolbar" data-theme={theme} role="toolbar" aria-label="Editor toolbar">
       <div className="mve-toolbar-left">
         {onModeChange && (
           <div className="mve-mode-toggle">
@@ -47,11 +87,34 @@ export function EditorToolbar({
             ))}
           </div>
         )}
+
+        {mode === "visual" && (
+          <div className="mve-history-btns" style={{ display: "flex", gap: 2, marginLeft: 8 }}>
+            <button
+              className="mve-action-btn"
+              onClick={onUndo}
+              disabled={!canUndo}
+              title="Undo (Ctrl+Z)"
+              style={{ opacity: canUndo ? 1 : 0.4 }}
+            >
+              &#x21A9;
+            </button>
+            <button
+              className="mve-action-btn"
+              onClick={onRedo}
+              disabled={!canRedo}
+              title="Redo (Ctrl+Shift+Z)"
+              style={{ opacity: canRedo ? 1 : 0.4 }}
+            >
+              &#x21AA;
+            </button>
+          </div>
+        )}
       </div>
 
-      {mode === "visual" && (
+      {mode === "visual" && canAddNodes && (
         <div className="mve-toolbar-center">
-          {SHAPES.map((s) => (
+          {shapes.map((s) => (
             <button
               key={s.type}
               className="mve-shape-btn"
@@ -70,6 +133,20 @@ export function EditorToolbar({
           <button className="mve-action-btn" onClick={onLayout} title="Auto-layout">
             \u2b4e Layout
           </button>
+        )}
+        {mode === "visual" && (onExportPng || onExportSvg) && (
+          <div className="mve-export-btns" style={{ display: "flex", gap: 2 }}>
+            {onExportPng && (
+              <button className="mve-action-btn" onClick={onExportPng} title="Export PNG">
+                &#x1F4F7; PNG
+              </button>
+            )}
+            {onExportSvg && (
+              <button className="mve-action-btn" onClick={onExportSvg} title="Export SVG">
+                &#x1F5BC; SVG
+              </button>
+            )}
+          </div>
         )}
         {onDelete && mode === "visual" && (
           <button

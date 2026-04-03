@@ -4,6 +4,10 @@ import path from "path";
 
 export default defineConfig({
   plugins: [react()],
+  server: {
+    port: 5174,
+    strictPort: true,
+  },
   resolve: {
     alias: {
       "@mermaid-visual/editor": path.resolve(__dirname, "../src/index.ts"),

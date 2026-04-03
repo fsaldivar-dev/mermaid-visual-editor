@@ -35,7 +35,7 @@ export function parseMindmap(text: string): DiagramModel {
       label,
       shape,
       position: { x: 0, y: 0 },
-      properties: {},
+      properties: { depth: stack.length },
     });
 
     while (stack.length && stack[stack.length - 1].indent >= indent) stack.pop();

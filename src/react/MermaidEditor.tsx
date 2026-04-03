@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import type { DiagramModel } from "../core/model/types";
 import { parse } from "../core/parser";
 import { serialize } from "../core/serializer";
 import { applyDagreLayout } from "../core/layout/dagre-layout";
 import { VisualEditor } from "./VisualEditor";
 import { EditorToolbar, type EditorMode } from "./EditorToolbar";
+import { useHistory } from "./hooks/useHistory";
+import { useState } from "react";
 
 export interface MermaidEditorProps {
   value?: string;
@@ -36,10 +38,20 @@ export function MermaidEditor({
   const [internalMode, setInternalMode] = useState<EditorMode>("visual");
   const mode = controlledMode ?? internalMode;
 
-  const [model, setModel] = useState<DiagramModel>(() => {
+  const initialModel = useRef(() => {
     const parsed = parse(value);
     return applyDagreLayout(parsed);
-  });
+  }).current;
+
+  const {
+    model,
+    setModel,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+    resetHistory,
+  } = useHistory(initialModel());
 
   const lastValueRef = useRef(value);
   const isInternalChange = useRef(false);
@@ -53,9 +65,10 @@ export function MermaidEditor({
     if (value !== lastValueRef.current) {
       lastValueRef.current = value;
       const parsed = parse(value);
-      setModel(applyDagreLayout(parsed));
+      const laid = applyDagreLayout(parsed);
+      resetHistory(laid);
     }
-  }, [value]);
+  }, [value, resetHistory]);
 
   const handleModelChange = useCallback(
     (newModel: DiagramModel) => {
@@ -66,8 +79,30 @@ export function MermaidEditor({
       isInternalChange.current = true;
       onChange?.(text);
     },
-    [onChange, onDiagramChange]
+    [onChange, onDiagramChange, setModel]
   );
+
+  const handleUndo = useCallback(() => {
+    const prev = undo();
+    if (prev) {
+      onDiagramChange?.(prev);
+      const text = serialize(prev);
+      lastValueRef.current = text;
+      isInternalChange.current = true;
+      onChange?.(text);
+    }
+  }, [undo, onChange, onDiagramChange]);
+
+  const handleRedo = useCallback(() => {
+    const next = redo();
+    if (next) {
+      onDiagramChange?.(next);
+      const text = serialize(next);
+      lastValueRef.current = text;
+      isInternalChange.current = true;
+      onChange?.(text);
+    }
+  }, [redo, onChange, onDiagramChange]);
 
   const handleModeChange = useCallback(
     (newMode: EditorMode) => {
@@ -86,6 +121,7 @@ export function MermaidEditor({
   }, [model, handleModelChange]);
 
   const addNodeRef = useRef<((type: string) => void) | null>(null);
+  const exportRef = useRef<{ exportToPng: () => void; exportToSvg: () => void } | null>(null);
 
   return (
     <div
@@ -100,10 +136,17 @@ export function MermaidEditor({
       {toolbar && (
         <EditorToolbar
           mode={mode}
+          diagramType={model.type}
           onModeChange={handleModeChange}
           onAddNode={(type) => addNodeRef.current?.(type)}
           onDelete={undefined}
           onLayout={handleLayout}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
+          canUndo={canUndo}
+          canRedo={canRedo}
+          onExportPng={() => exportRef.current?.exportToPng()}
+          onExportSvg={() => exportRef.current?.exportToSvg()}
           theme={theme}
         />
       )}
@@ -113,11 +156,14 @@ export function MermaidEditor({
           <VisualEditor
             model={model}
             onModelChange={handleModelChange}
+            onUndo={handleUndo}
+            onRedo={handleRedo}
             theme={theme}
             minimap={minimap}
             readOnly={readOnly}
             height="100%"
             addNodeRef={addNodeRef}
+            exportRef={exportRef}
           />
         )}
 

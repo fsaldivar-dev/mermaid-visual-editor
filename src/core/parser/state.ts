@@ -5,26 +5,52 @@ export function parseStateDiagram(text: string): DiagramModel {
   const elementsMap = new Map<string, DiagramElement>();
   const connections: DiagramConnection[] = [];
 
-  const ensure = (id: string) => {
+  // Track [*] usage: as source = start, as target = end
+  let hasStart = false;
+  let hasEnd = false;
+
+  // First pass: detect [*] roles
+  for (let i = 1; i < lines.length; i++) {
+    const m = lines[i].match(/^(\S+)\s*-->\s*(\S+)/);
+    if (m) {
+      if (m[1] === "[*]") hasStart = true;
+      if (m[2] === "[*]") hasEnd = true;
+    }
+  }
+
+  const resolveId = (id: string, isSource: boolean): string => {
+    if (id !== "[*]") return id;
+    // If [*] is used as both start and end, disambiguate
+    if (hasStart && hasEnd) {
+      return isSource ? "_start_" : "_end_";
+    }
+    return isSource ? "_start_" : "_end_";
+  };
+
+  const ensure = (id: string, originalId: string) => {
     if (elementsMap.has(id)) return;
-    const isStart = id === "[*]";
+    const isStart = originalId === "[*]" && id === "_start_";
+    const isEnd = originalId === "[*]" && id === "_end_";
+    const isTerminal = isStart || isEnd;
+
     elementsMap.set(id, {
-      id: id.replace(/[[\]*]/g, "_star_"),
-      label: isStart ? "\u25cf" : id,
-      shape: isStart ? "circle" : "rounded",
+      id,
+      label: isTerminal ? "" : originalId,
+      shape: isTerminal ? "circle" : "rounded",
       position: { x: 0, y: 0 },
-      properties: {},
+      properties: { isStart, isEnd },
     });
   };
 
+  // Second pass: build nodes and edges
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i];
     const m = line.match(/^(\S+)\s*-->\s*(\S+)\s*(?::\s*(.+))?$/);
     if (m) {
-      ensure(m[1]);
-      ensure(m[2]);
-      const srcId = m[1].replace(/[[\]*]/g, "_star_");
-      const tgtId = m[2].replace(/[[\]*]/g, "_star_");
+      const srcId = resolveId(m[1], true);
+      const tgtId = resolveId(m[2], false);
+      ensure(srcId, m[1]);
+      ensure(tgtId, m[2]);
       connections.push({
         id: `e${connections.length}`,
         source: srcId,

@@ -1,9 +1,22 @@
+import type { DiagramType } from "../../core/model/types";
 import { RectNode } from "./RectNode";
 import { RoundedNode } from "./RoundedNode";
 import { DiamondNode } from "./DiamondNode";
 import { CircleNode } from "./CircleNode";
+import { ClassNode } from "./ClassNode";
+import { EntityNode } from "./EntityNode";
+import { StateNode } from "./StateNode";
+import { ParticipantNode } from "./ParticipantNode";
+import { GanttTaskNode } from "./GanttTaskNode";
+import { PieSliceNode } from "./PieSliceNode";
+import { TimelineNode } from "./TimelineNode";
+import { MindmapNode } from "./MindmapNode";
+import { GitCommitNode } from "./GitCommitNode";
+import { JourneyStepNode } from "./JourneyStepNode";
+import { MessageNode } from "./MessageNode";
 
-export const nodeTypes = {
+// Base node types (used by flowchart)
+export const baseNodeTypes = {
   rect: RectNode,
   rounded: RoundedNode,
   diamond: DiamondNode,
@@ -11,4 +24,85 @@ export const nodeTypes = {
   default: RectNode,
 };
 
-export { RectNode, RoundedNode, DiamondNode, CircleNode };
+// Specialized node types per diagram type
+export const diagramNodeTypes: Record<string, Record<string, React.ComponentType<any>>> = {
+  flowchart: baseNodeTypes,
+  state: {
+    ...baseNodeTypes,
+    state: StateNode,
+    rounded: StateNode,
+    circle: StateNode,
+  },
+  class: {
+    ...baseNodeTypes,
+    rect: ClassNode,
+    classNode: ClassNode,
+  },
+  er: {
+    ...baseNodeTypes,
+    rect: EntityNode,
+    entity: EntityNode,
+  },
+  sequence: {
+    ...baseNodeTypes,
+    participant: ParticipantNode,
+    message: MessageNode,
+  },
+  gantt: {
+    ...baseNodeTypes,
+    rect: GanttTaskNode,
+    ganttTask: GanttTaskNode,
+  },
+  pie: {
+    ...baseNodeTypes,
+    circle: PieSliceNode,
+    pieSlice: PieSliceNode,
+  },
+  timeline: {
+    ...baseNodeTypes,
+    rect: TimelineNode,
+    timelineEvent: TimelineNode,
+  },
+  mindmap: {
+    ...baseNodeTypes,
+    rounded: MindmapNode,
+    circle: MindmapNode,
+    rect: MindmapNode,
+    mindmapNode: MindmapNode,
+  },
+  gitgraph: {
+    ...baseNodeTypes,
+    circle: GitCommitNode,
+    gitCommit: GitCommitNode,
+  },
+  journey: {
+    ...baseNodeTypes,
+    rounded: JourneyStepNode,
+    journeyStep: JourneyStepNode,
+  },
+};
+
+export function getNodeTypes(diagramType: DiagramType): Record<string, React.ComponentType<any>> {
+  return diagramNodeTypes[diagramType] || baseNodeTypes;
+}
+
+// Legacy export for backwards compat
+export const nodeTypes = baseNodeTypes;
+
+export {
+  RectNode,
+  RoundedNode,
+  DiamondNode,
+  CircleNode,
+  ClassNode,
+  EntityNode,
+  StateNode,
+  ParticipantNode,
+  GanttTaskNode,
+  PieSliceNode,
+  TimelineNode,
+  MindmapNode,
+  GitCommitNode,
+  JourneyStepNode,
+  MessageNode,
+};

@@ -17,7 +17,24 @@ export type DiagramType =
 
 export type Direction = "TD" | "TB" | "LR" | "RL" | "BT";
 
-export type NodeShape = "rect" | "rounded" | "diamond" | "circle";
+export type NodeShape =
+  | "rect"
+  | "rounded"
+  | "diamond"
+  | "circle"
+  // Specialized shapes for specific diagram types
+  | "participant"
+  | "message"
+  | "state"
+  | "entity"
+  | "classNode"
+  | "ganttTask"
+  | "pieSlice"
+  | "timelineEvent"
+  | "mindmapNode"
+  | "gitCommit"
+  | "journeyStep"
+  | "group";
 
 export interface DiagramElement {
   id: string;
@@ -25,6 +42,13 @@ export interface DiagramElement {
   shape: NodeShape;
   position: { x: number; y: number };
   properties: Record<string, unknown>;
+  parentId?: string;
+}
+
+export interface SubgraphDef {
+  id: string;
+  label: string;
+  children: string[];
 }
 
 export interface DiagramConnection {
@@ -42,6 +66,7 @@ export interface DiagramModel {
   elements: DiagramElement[];
   connections: DiagramConnection[];
   metadata: Record<string, string>;
+  subgraphs?: SubgraphDef[];
 }
 
 export function createEmptyModel(

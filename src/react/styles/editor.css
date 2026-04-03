@@ -344,3 +344,659 @@
 .mve-properties[data-theme="dark"] select {
   border-color: rgba(255, 255, 255, 0.12);
 }
+
+.mve-panel-hint {
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.4);
+  font-style: italic;
+  margin: 4px 0;
+}
+
+[data-theme="dark"] .mve-panel-hint {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.mve-readonly {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.mve-textarea {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: "SF Mono", Menlo, monospace;
+  background: transparent;
+  color: inherit;
+  outline: none;
+  resize: vertical;
+}
+
+.mve-textarea:focus {
+  border-color: #0071e3;
+}
+
+[data-theme="dark"] .mve-textarea {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.mve-flip-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 6px;
+  background: transparent;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+  flex-shrink: 0;
+}
+
+.mve-flip-btn:hover {
+  background: rgba(0, 113, 227, 0.1);
+  border-color: #0071e3;
+}
+
+[data-theme="dark"] .mve-flip-btn {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="dark"] .mve-flip-btn:hover {
+  background: rgba(100, 180, 255, 0.1);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Specialized Node Styles
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Class Diagram Node ── */
+
+.mve-class-node {
+  background: #fff;
+  border: 2px solid #0071e3;
+  border-radius: 6px;
+  min-width: 140px;
+  font-size: 12px;
+  text-align: left;
+}
+
+.mve-class-node.mve-selected {
+  border-color: #ff9500;
+  box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.2);
+}
+
+[data-theme="dark"] .mve-class-node {
+  background: #2c2c2e;
+  border-color: #6cb4ff;
+}
+
+.mve-class-header {
+  padding: 8px 12px;
+  font-weight: 700;
+  font-size: 13px;
+  text-align: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .mve-class-header {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.mve-class-section {
+  padding: 6px 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.mve-class-section:last-child {
+  border-bottom: none;
+}
+
+.mve-class-member {
+  padding: 2px 0;
+  font-size: 11px;
+  font-family: "SF Mono", Menlo, monospace;
+  color: rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="dark"] .mve-class-member {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ── Entity (ER) Node ── */
+
+.mve-entity-node {
+  background: #fff;
+  border: 2px solid #5856d6;
+  border-radius: 6px;
+  min-width: 120px;
+}
+
+.mve-entity-node.mve-selected {
+  border-color: #ff9500;
+  box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.2);
+}
+
+[data-theme="dark"] .mve-entity-node {
+  background: #2c2c2e;
+  border-color: #7d7aff;
+}
+
+.mve-entity-header {
+  padding: 8px 14px;
+  font-weight: 700;
+  font-size: 13px;
+  text-align: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.mve-entity-attrs {
+  padding: 6px 14px;
+}
+
+.mve-entity-attr {
+  padding: 2px 0;
+  font-size: 11px;
+  font-family: "SF Mono", Menlo, monospace;
+}
+
+/* ── State Node ── */
+
+.mve-state-node {
+  padding: 12px 24px;
+  background: #fff;
+  border: 2px solid #34c759;
+  border-radius: 14px;
+  min-width: 90px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.mve-state-node.mve-selected {
+  border-color: #ff9500;
+  box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.2);
+}
+
+[data-theme="dark"] .mve-state-node {
+  background: #2c2c2e;
+  border-color: #30d158;
+}
+
+.mve-state-terminal {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+}
+
+/* Start: filled black circle */
+.mve-state-start-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #1d1d1f;
+}
+
+[data-theme="dark"] .mve-state-start-dot {
+  background: #f5f5f7;
+}
+
+.mve-state-start.mve-selected .mve-state-start-dot {
+  box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.4);
+}
+
+/* End: ring with inner dot (bullseye) */
+.mve-state-end-ring {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 3px solid #1d1d1f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-theme="dark"] .mve-state-end-ring {
+  border-color: #f5f5f7;
+}
+
+.mve-state-end-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #1d1d1f;
+}
+
+[data-theme="dark"] .mve-state-end-dot {
+  background: #f5f5f7;
+}
+
+.mve-state-end.mve-selected .mve-state-end-ring {
+  border-color: #ff9500;
+  box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.4);
+}
+
+/* ── Participant (Sequence) Node ── */
+
+.mve-participant-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: transparent;
+}
+
+.mve-participant-box {
+  padding: 10px 24px;
+  background: #fff;
+  border: 2px solid #0071e3;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  text-align: center;
+  width: 120px;
+  position: relative;
+  z-index: 2;
+}
+
+.mve-participant-node.mve-selected .mve-participant-box {
+  border-color: #ff9500;
+  box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.2);
+}
+
+[data-theme="dark"] .mve-participant-box {
+  background: #2c2c2e;
+  border-color: #6cb4ff;
+}
+
+/* Hide default handles on participant box */
+.mve-participant-node > .react-flow__handle {
+  display: none !important;
+}
+
+.mve-participant-lifeline {
+  width: 2px;
+  background: rgba(0, 0, 0, 0.2);
+  margin-top: 0;
+  z-index: 1;
+  position: relative;
+}
+
+/* Lifeline connection handles — subtle dots on the lifeline */
+.mve-lifeline-handle.react-flow__handle {
+  display: block !important;
+  width: 12px !important;
+  height: 12px !important;
+  opacity: 0 !important;
+  background: #0071e3 !important;
+  border: 2px solid #fff !important;
+  top: 50% !important;
+  transition: opacity 0.15s;
+}
+
+.mve-participant-node:hover .mve-lifeline-handle.react-flow__handle,
+.mve-lifeline-handle.react-flow__handle.connecting {
+  opacity: 1 !important;
+}
+
+[data-theme="dark"] .mve-participant-lifeline {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ── Message (Sequence) Node ── */
+
+.mve-message-node {
+  position: relative;
+  height: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+}
+
+/* Hide handles on message nodes */
+.mve-message-node .react-flow__handle {
+  display: none !important;
+}
+
+/* Selection: subtle highlight instead of changing the arrow color */
+.mve-message-node.mve-selected {
+  background: rgba(0, 113, 227, 0.06);
+  border-radius: 4px;
+}
+
+/* Also hide handles when the node has the react-flow selected class */
+.mve-message-node .react-flow__handle,
+.react-flow__node-message .react-flow__handle {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
+}
+
+.mve-message-arrow {
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.mve-message-line {
+  flex: 1;
+  height: 2px;
+  background: #1d1d1f;
+}
+
+.mve-message-arrow.mve-reply .mve-message-line {
+  background: repeating-linear-gradient(
+    90deg,
+    #1d1d1f 0px,
+    #1d1d1f 6px,
+    transparent 6px,
+    transparent 10px
+  ) !important;
+}
+
+[data-theme="dark"] .mve-message-line {
+  background: #f5f5f7;
+}
+
+[data-theme="dark"] .mve-message-arrow.mve-reply .mve-message-line {
+  background: repeating-linear-gradient(
+    90deg,
+    #f5f5f7 0px,
+    #f5f5f7 6px,
+    transparent 6px,
+    transparent 10px
+  ) !important;
+}
+
+/* Arrow pointing right → */
+.mve-message-head-right {
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 10px solid #1d1d1f;
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .mve-message-head-right {
+  border-left-color: #f5f5f7;
+}
+
+/* Arrow pointing left ← */
+.mve-message-head-left {
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-right: 10px solid #1d1d1f;
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .mve-message-head-left {
+  border-right-color: #f5f5f7;
+}
+
+.mve-message-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #1d1d1f;
+  white-space: nowrap;
+  margin-top: 2px;
+  text-align: center;
+}
+
+.mve-message-label.mve-reply {
+  font-style: italic;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .mve-message-label {
+  color: #f5f5f7;
+}
+
+[data-theme="dark"] .mve-message-label.mve-reply {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ── Gantt Task Node ── */
+
+.mve-gantt-task {
+  min-width: 160px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.mve-gantt-task.mve-selected {
+  border-color: #ff9500;
+  box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.2);
+}
+
+[data-theme="dark"] .mve-gantt-task {
+  background: #2c2c2e;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.mve-gantt-section {
+  padding: 3px 10px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+[data-theme="dark"] .mve-gantt-section {
+  color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.mve-gantt-bar {
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #0071e3 0%, #5ac8fa 100%);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ── Pie Slice Node ── */
+
+.mve-pie-slice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+}
+
+.mve-pie-slice.mve-selected {
+  border-color: #ff9500;
+  box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.2);
+}
+
+[data-theme="dark"] .mve-pie-slice {
+  background: #2c2c2e;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.mve-pie-color {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.mve-pie-label {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* ── Timeline Node ── */
+
+.mve-timeline-node {
+  background: #fff;
+  border: 2px solid #5856d6;
+  border-radius: 8px;
+  min-width: 120px;
+  text-align: center;
+}
+
+.mve-timeline-node.mve-selected {
+  border-color: #ff9500;
+  box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.2);
+}
+
+[data-theme="dark"] .mve-timeline-node {
+  background: #2c2c2e;
+  border-color: #7d7aff;
+}
+
+.mve-timeline-period {
+  padding: 6px 12px;
+  font-weight: 700;
+  font-size: 13px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.mve-timeline-events {
+  padding: 6px 12px;
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="dark"] .mve-timeline-events {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* ── Mindmap Node ── */
+
+.mve-mindmap-node {
+  padding: 8px 16px;
+  background: #fff;
+  border: 2px solid #0071e3;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.mve-mindmap-root {
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: 50%;
+  min-width: 80px;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mve-mindmap-node.mve-selected {
+  box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.2);
+  border-color: #ff9500;
+}
+
+[data-theme="dark"] .mve-mindmap-node {
+  background: #2c2c2e;
+}
+
+/* ── Git Commit Node ── */
+
+.mve-git-commit {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.mve-git-commit.mve-selected {
+  border-color: #ff9500;
+  box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.2);
+}
+
+[data-theme="dark"] .mve-git-commit {
+  background: #2c2c2e;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.mve-git-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.mve-git-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mve-git-branch {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.mve-git-msg {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="dark"] .mve-git-msg {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* ── Journey Step Node ── */
+
+.mve-journey-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  background: #fff;
+  border: 2px solid #34c759;
+  border-radius: 12px;
+}
+
+.mve-journey-step.mve-selected {
+  border-color: #ff9500;
+  box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.2);
+}
+
+[data-theme="dark"] .mve-journey-step {
+  background: #2c2c2e;
+  border-color: #30d158;
+}
+
+.mve-journey-score {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
