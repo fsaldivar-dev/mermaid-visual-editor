@@ -43,6 +43,12 @@ interface EditorToolbarProps {
   onAddNode?: (type: string) => void;
   onDelete?: () => void;
   onLayout?: () => void;
+  onUndo?: () => void;
+  onRedo?: () => void;
+  canUndo?: boolean;
+  canRedo?: boolean;
+  onExportPng?: () => void;
+  onExportSvg?: () => void;
   theme?: "light" | "dark";
 }
 
@@ -53,13 +59,19 @@ export function EditorToolbar({
   onAddNode,
   onDelete,
   onLayout,
+  onUndo,
+  onRedo,
+  canUndo = false,
+  canRedo = false,
+  onExportPng,
+  onExportSvg,
   theme = "light",
 }: EditorToolbarProps) {
   const shapes = SHAPES_BY_TYPE[diagramType] || DEFAULT_SHAPES;
   const canAddNodes = !["pie", "gantt", "timeline", "journey", "gitgraph"].includes(diagramType);
 
   return (
-    <div className="mve-toolbar" data-theme={theme}>
+    <div className="mve-toolbar" data-theme={theme} role="toolbar" aria-label="Editor toolbar">
       <div className="mve-toolbar-left">
         {onModeChange && (
           <div className="mve-mode-toggle">
@@ -73,6 +85,29 @@ export function EditorToolbar({
                 {m.charAt(0).toUpperCase() + m.slice(1)}
               </button>
             ))}
+          </div>
+        )}
+
+        {mode === "visual" && (
+          <div className="mve-history-btns" style={{ display: "flex", gap: 2, marginLeft: 8 }}>
+            <button
+              className="mve-action-btn"
+              onClick={onUndo}
+              disabled={!canUndo}
+              title="Undo (Ctrl+Z)"
+              style={{ opacity: canUndo ? 1 : 0.4 }}
+            >
+              &#x21A9;
+            </button>
+            <button
+              className="mve-action-btn"
+              onClick={onRedo}
+              disabled={!canRedo}
+              title="Redo (Ctrl+Shift+Z)"
+              style={{ opacity: canRedo ? 1 : 0.4 }}
+            >
+              &#x21AA;
+            </button>
           </div>
         )}
       </div>
@@ -98,6 +133,20 @@ export function EditorToolbar({
           <button className="mve-action-btn" onClick={onLayout} title="Auto-layout">
             \u2b4e Layout
           </button>
+        )}
+        {mode === "visual" && (onExportPng || onExportSvg) && (
+          <div className="mve-export-btns" style={{ display: "flex", gap: 2 }}>
+            {onExportPng && (
+              <button className="mve-action-btn" onClick={onExportPng} title="Export PNG">
+                &#x1F4F7; PNG
+              </button>
+            )}
+            {onExportSvg && (
+              <button className="mve-action-btn" onClick={onExportSvg} title="Export SVG">
+                &#x1F5BC; SVG
+              </button>
+            )}
+          </div>
         )}
         {onDelete && mode === "visual" && (
           <button

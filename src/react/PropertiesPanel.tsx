@@ -36,7 +36,7 @@ export function PropertiesPanel({
   const EdgePanel = useMemo(() => getEdgePanel(diagramType), [diagramType]);
 
   return (
-    <div className="mve-properties" data-theme={theme}>
+    <div className="mve-properties" data-theme={theme} role="form" aria-label="Properties panel">
       {selectedNode && (
         <NodePanel
           node={selectedNode}

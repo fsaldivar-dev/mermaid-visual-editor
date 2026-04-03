@@ -33,7 +33,8 @@ export type NodeShape =
   | "timelineEvent"
   | "mindmapNode"
   | "gitCommit"
-  | "journeyStep";
+  | "journeyStep"
+  | "group";
 
 export interface DiagramElement {
   id: string;
@@ -41,6 +42,13 @@ export interface DiagramElement {
   shape: NodeShape;
   position: { x: number; y: number };
   properties: Record<string, unknown>;
+  parentId?: string;
+}
+
+export interface SubgraphDef {
+  id: string;
+  label: string;
+  children: string[];
 }
 
 export interface DiagramConnection {
@@ -58,6 +66,7 @@ export interface DiagramModel {
   elements: DiagramElement[];
   connections: DiagramConnection[];
   metadata: Record<string, string>;
+  subgraphs?: SubgraphDef[];
 }
 
 export function createEmptyModel(

@@ -10,6 +10,9 @@ import { serializePie } from "./pie";
 import { serializeJourney } from "./journey";
 import { serializeTimeline } from "./timeline";
 import { serializeGitGraph } from "./gitgraph";
+import { serializeC4Diagram } from "./c4-diagram";
+import { serializeBlockDiagram } from "./block-diagram";
+import { serializeRequirementDiagram } from "./requirement-diagram";
 
 export function serialize(model: DiagramModel): string {
   switch (model.type) {
@@ -35,6 +38,12 @@ export function serialize(model: DiagramModel): string {
       return serializeTimeline(model);
     case "gitgraph":
       return serializeGitGraph(model);
+    case "c4":
+      return serializeC4Diagram(model);
+    case "block":
+      return serializeBlockDiagram(model);
+    case "requirement":
+      return serializeRequirementDiagram(model);
     default:
       return serializeFlowchart({ ...model, type: "flowchart" });
   }
@@ -52,4 +61,7 @@ export {
   serializeJourney,
   serializeTimeline,
   serializeGitGraph,
+  serializeC4Diagram,
+  serializeBlockDiagram,
+  serializeRequirementDiagram,
 };

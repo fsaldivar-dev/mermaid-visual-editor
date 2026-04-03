@@ -35,9 +35,9 @@
     "playground": "cd playground && npm run dev"
   },
   "peerDependencies": {
+    "mermaid": ">=11.0.0",
     "react": ">=18.0.0",
-    "react-dom": ">=18.0.0",
-    "mermaid": ">=11.0.0"
+    "react-dom": ">=18.0.0"
   },
   "peerDependenciesMeta": {
     "mermaid": {
@@ -45,18 +45,19 @@
     }
   },
   "dependencies": {
+    "@dagrejs/dagre": "^1.1.4",
     "@xyflow/react": "^12.6.0",
-    "@dagrejs/dagre": "^1.1.4"
+    "html-to-image": "^1.11.13"
   },
   "devDependencies": {
-    "typescript": "^5.7.0",
-    "tsup": "^8.4.0",
-    "vitest": "^3.1.0",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
+    "@testing-library/react": "^16.3.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
-    "@testing-library/react": "^16.3.0"
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "tsup": "^8.4.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.1.0"
   },
   "license": "MIT",
   "repository": {

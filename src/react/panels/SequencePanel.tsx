@@ -1,4 +1,5 @@
 import type { NodePanelProps } from "./types";
+import { ValidationMessage } from "../components/ValidationMessage";
 
 const MESSAGE_TYPES = [
   { value: "->>", label: "\u2192 Request" },
@@ -33,6 +34,7 @@ export function SequenceNodePanel({ node, allNodes, onLabelChange, onPropertyCha
             onChange={(e) => onLabelChange(node.id, e.target.value)}
             autoFocus
           />
+          {!((node.data?.label as string) || "").trim() && <ValidationMessage message="Message text is required" />}
         </label>
         <label>
           <span>From</span>

@@ -13,6 +13,9 @@ import { MindmapNodePanel } from "./MindmapPanel";
 import { GanttNodePanel } from "./GanttPanel";
 import { TimelineNodePanel } from "./TimelinePanel";
 import { GitGraphNodePanel } from "./GitGraphPanel";
+import { C4NodePanel, C4EdgePanel } from "./C4Panel";
+import { BlockNodePanel } from "./BlockPanel";
+import { RequirementNodePanel, RequirementEdgePanel } from "./RequirementPanel";
 
 interface PanelRegistry {
   node: ComponentType<NodePanelProps>;
@@ -31,6 +34,9 @@ const registry: Partial<Record<DiagramType, Partial<PanelRegistry>>> = {
   gantt: { node: GanttNodePanel },
   timeline: { node: TimelineNodePanel },
   gitgraph: { node: GitGraphNodePanel },
+  c4: { node: C4NodePanel, edge: C4EdgePanel },
+  block: { node: BlockNodePanel },
+  requirement: { node: RequirementNodePanel, edge: RequirementEdgePanel },
 };
 
 export function getNodePanel(type: DiagramType): ComponentType<NodePanelProps> {

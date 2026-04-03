@@ -1,4 +1,5 @@
 import type { NodePanelProps, EdgePanelProps } from "./types";
+import { ValidationMessage } from "../components/ValidationMessage";
 
 const RELATIONSHIP_TYPES = [
   { value: "<|--", label: "Inheritance" },
@@ -27,6 +28,7 @@ export function ClassNodePanel({ node, onLabelChange }: NodePanelProps) {
           }}
           autoFocus
         />
+        {!className.trim() && <ValidationMessage message="Class name is required" />}
       </label>
       <label>
         <span>Members</span>

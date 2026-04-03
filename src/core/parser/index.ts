@@ -10,6 +10,9 @@ import { parsePie } from "./pie";
 import { parseJourney } from "./journey";
 import { parseTimeline } from "./timeline";
 import { parseGitGraph } from "./gitgraph";
+import { parseC4Diagram } from "./c4-diagram";
+import { parseBlockDiagram } from "./block-diagram";
+import { parseRequirementDiagram } from "./requirement-diagram";
 import { parseGenericLines } from "./generic";
 
 export function detectDiagramType(text: string): DiagramType {
@@ -57,11 +60,11 @@ export function parse(text: string): DiagramModel {
     case "gitgraph":
       return parseGitGraph(text);
     case "c4":
-      return parseGenericLines(text, "c4", "LR");
+      return parseC4Diagram(text);
     case "block":
-      return parseGenericLines(text, "block", "TD");
+      return parseBlockDiagram(text);
     case "requirement":
-      return parseGenericLines(text, "requirement", "LR");
+      return parseRequirementDiagram(text);
     default:
       return parseFlowchart(text);
   }
@@ -79,5 +82,8 @@ export {
   parseJourney,
   parseTimeline,
   parseGitGraph,
+  parseC4Diagram,
+  parseBlockDiagram,
+  parseRequirementDiagram,
   parseGenericLines,
 };

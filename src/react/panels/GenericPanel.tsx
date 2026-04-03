@@ -1,4 +1,5 @@
 import type { NodePanelProps } from "./types";
+import { ValidationMessage } from "../components/ValidationMessage";
 
 const DEFAULT_SHAPES = [
   { type: "rect", label: "Rectangle", icon: "\u25ad" },
@@ -8,16 +9,19 @@ const DEFAULT_SHAPES = [
 ];
 
 export function GenericNodePanel({ node, onLabelChange, onTypeChange }: NodePanelProps) {
+  const label = (node.data?.label as string) || "";
+
   return (
     <>
       <h4>Node</h4>
       <label>
         <span>Label</span>
         <input
-          value={(node.data?.label as string) || ""}
+          value={label}
           onChange={(e) => onLabelChange(node.id, e.target.value)}
           autoFocus
         />
+        {!label.trim() && <ValidationMessage message="Label cannot be empty" />}
       </label>
       <label>
         <span>Shape</span>

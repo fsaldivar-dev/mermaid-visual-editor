@@ -8,6 +8,7 @@ import {
   useNodesState,
   useEdgesState,
   MarkerType,
+  SelectionMode,
   type Connection,
   type Node,
   type Edge,
@@ -18,6 +19,10 @@ import { PropertiesPanel } from "./PropertiesPanel";
 import type { DiagramModel } from "../core/model/types";
 import { toReactFlow } from "../core/converter/to-react-flow";
 import { fromReactFlow } from "../core/converter/from-react-flow";
+import { useClipboard } from "./hooks/useClipboard";
+import { useExport } from "./hooks/useExport";
+import { useSearch } from "./hooks/useSearch";
+import { SearchOverlay } from "./components/SearchOverlay";
 
 const defaultEdgeOptions = {
   type: "smoothstep" as const,
@@ -30,21 +35,27 @@ let nodeIdCounter = 0;
 export interface VisualEditorProps {
   model: DiagramModel;
   onModelChange: (model: DiagramModel) => void;
+  onUndo?: () => void;
+  onRedo?: () => void;
   theme?: "light" | "dark";
   minimap?: boolean;
   readOnly?: boolean;
   height?: number | string;
   addNodeRef?: React.MutableRefObject<((type: string) => void) | null>;
+  exportRef?: React.MutableRefObject<{ exportToPng: () => void; exportToSvg: () => void } | null>;
 }
 
 export function VisualEditor({
   model,
   onModelChange,
+  onUndo,
+  onRedo,
   theme = "light",
   minimap = true,
   readOnly = false,
   height = "100%",
   addNodeRef,
+  exportRef,
 }: VisualEditorProps) {
   const initial = useMemo(() => toReactFlow(model), []);
   const [nodes, setNodes, onNodesChange] = useNodesState(initial.nodes);
@@ -54,6 +65,11 @@ export function VisualEditor({
 
   // Get node types for current diagram type
   const currentNodeTypes = useMemo(() => getNodeTypes(model.type), [model.type]);
+
+  // Clipboard, export, and search hooks
+  const { copy, paste } = useClipboard();
+  const { exportToPng, exportToSvg } = useExport();
+  const searchState = useSearch(nodes);
 
   // Sync from external model changes
   useEffect(() => {
@@ -169,6 +185,12 @@ export function VisualEditor({
     return () => { if (addNodeRef) addNodeRef.current = null; };
   }, [addNode, addNodeRef]);
 
+  // Expose export functions to parent via ref
+  useEffect(() => {
+    if (exportRef) exportRef.current = { exportToPng, exportToSvg };
+    return () => { if (exportRef) exportRef.current = null; };
+  }, [exportRef, exportToPng, exportToSvg]);
+
   const deleteSelected = useCallback(() => {
     if (readOnly) return;
     setNodes((nds) => {
@@ -268,14 +290,94 @@ export function VisualEditor({
   // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Delete" || e.key === "Backspace") {
-        if ((e.target as HTMLElement)?.tagName === "INPUT") return;
+      const target = e.target as HTMLElement;
+      const isInput = target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.isContentEditable;
+      const mod = e.metaKey || e.ctrlKey;
+
+      // Delete/Backspace — only when not in input
+      if ((e.key === "Delete" || e.key === "Backspace") && !isInput) {
         deleteSelected();
+        return;
+      }
+
+      // Ctrl/Cmd+Z — Undo
+      if (mod && e.key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        onUndo?.();
+        return;
+      }
+
+      // Ctrl/Cmd+Shift+Z or Ctrl/Cmd+Y — Redo
+      if ((mod && e.key === "z" && e.shiftKey) || (mod && e.key === "y")) {
+        e.preventDefault();
+        onRedo?.();
+        return;
+      }
+
+      // Ctrl/Cmd+A — Select all (only when not in input)
+      if (mod && e.key === "a" && !isInput) {
+        e.preventDefault();
+        setNodes((nds) => nds.map((n) => ({ ...n, selected: true })));
+        setEdges((eds) => eds.map((e) => ({ ...e, selected: true })));
+        return;
+      }
+
+      // Ctrl/Cmd+C — Copy (only when not in input)
+      if (mod && e.key === "c" && !isInput) {
+        copy(nodes, edges);
+        return;
+      }
+
+      // Ctrl/Cmd+V — Paste (only when not in input)
+      if (mod && e.key === "v" && !isInput) {
+        e.preventDefault();
+        const pasted = paste();
+        if (pasted) {
+          // Deselect existing nodes
+          setNodes((nds) => {
+            const deselected = nds.map((n) => ({ ...n, selected: false }));
+            const updated = [...deselected, ...pasted.nodes];
+            setEdges((eds) => {
+              const updatedEdges = [...eds, ...pasted.edges];
+              setTimeout(() => emitChange(updated, updatedEdges), 0);
+              return updatedEdges;
+            });
+            return updated;
+          });
+        }
+        return;
+      }
+
+      // Ctrl/Cmd+F — Search
+      if (mod && e.key === "f") {
+        e.preventDefault();
+        searchState.open();
+        return;
+      }
+
+      // Ctrl/Cmd+D — Duplicate selected (only when not in input)
+      if (mod && e.key === "d" && !isInput) {
+        e.preventDefault();
+        copy(nodes, edges);
+        const pasted = paste();
+        if (pasted) {
+          setNodes((nds) => {
+            const deselected = nds.map((n) => ({ ...n, selected: false }));
+            const updated = [...deselected, ...pasted.nodes];
+            setEdges((eds) => {
+              const updatedEdges = [...eds, ...pasted.edges];
+              setTimeout(() => emitChange(updated, updatedEdges), 0);
+              return updatedEdges;
+            });
+            return updated;
+          });
+        }
+        return;
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [deleteSelected]);
+  }, [deleteSelected, onUndo, onRedo, setNodes, setEdges, nodes, edges, copy, paste, emitChange, searchState]);
 
   const onNodeClick = useCallback((_: unknown, node: Node) => {
     setSelectedNode(node);
@@ -397,6 +499,10 @@ export function VisualEditor({
         nodeTypes={currentNodeTypes}
         fitView
         colorMode={theme === "dark" ? "dark" : "light"}
+        selectionOnDrag
+        selectionMode={SelectionMode.Partial}
+        multiSelectionKeyCode="Meta"
+        deleteKeyCode={null}
       >
         <Background gap={20} size={1} />
         <Controls />
@@ -404,6 +510,18 @@ export function VisualEditor({
           <MiniMap pannable zoomable style={{ height: 80, width: 120 }} />
         )}
       </ReactFlow>
+
+      <SearchOverlay
+        isOpen={searchState.isOpen}
+        query={searchState.query}
+        matchCount={searchState.matchIds.length}
+        currentIndex={searchState.currentIndex}
+        onSearch={searchState.search}
+        onNext={searchState.nextMatch}
+        onPrev={searchState.prevMatch}
+        onClose={searchState.close}
+        theme={theme}
+      />
 
       {!readOnly && (
         <PropertiesPanel
@@ -460,4 +578,3 @@ export function VisualEditor({
     </div>
   );
 }
-

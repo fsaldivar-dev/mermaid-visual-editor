@@ -10,7 +10,12 @@ interface BaseNodeProps {
 
 export function BaseNode({ data, selected, className, children }: BaseNodeProps) {
   return (
-    <div className={`mve-node ${className} ${selected ? "mve-selected" : ""}`}>
+    <div
+      className={`mve-node ${className} ${selected ? "mve-selected" : ""}`}
+      role="treeitem"
+      aria-label={data?.label || "Node"}
+      aria-selected={selected}
+    >
       <Handle type="target" position={Position.Top} />
       {children || <span>{data?.label || ""}</span>}
       <Handle type="source" position={Position.Bottom} />
