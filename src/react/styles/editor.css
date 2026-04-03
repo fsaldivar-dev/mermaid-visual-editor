@@ -345,6 +345,43 @@
   border-color: rgba(255, 255, 255, 0.12);
 }
 
+.mve-panel-hint {
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.4);
+  font-style: italic;
+  margin: 4px 0;
+}
+
+[data-theme="dark"] .mve-panel-hint {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.mve-readonly {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.mve-textarea {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: "SF Mono", Menlo, monospace;
+  background: transparent;
+  color: inherit;
+  outline: none;
+  resize: vertical;
+}
+
+.mve-textarea:focus {
+  border-color: #0071e3;
+}
+
+[data-theme="dark"] .mve-textarea {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
 .mve-flip-btn {
   width: 32px;
   height: 32px;

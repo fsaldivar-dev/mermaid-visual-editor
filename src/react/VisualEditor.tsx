@@ -410,9 +410,8 @@ export function VisualEditor({
           selectedNode={selectedNode}
           selectedEdge={selectedEdge}
           diagramType={model.type}
-          participants={nodes
-            .filter((n) => n.data?.isParticipant)
-            .map((n) => ({ id: n.id, label: (n.data?.label as string) || n.id }))}
+          allNodes={nodes}
+          allEdges={edges}
           onNodeLabelChange={(id, label) => {
             updateNodeLabel(id, label);
             setSelectedNode((prev) =>
@@ -439,6 +438,20 @@ export function VisualEditor({
             updateEdgeLabel(id, label);
             setSelectedEdge((prev) =>
               prev && prev.id === id ? { ...prev, label } : prev
+            );
+          }}
+          onEdgePropertyChange={(id, key, value) => {
+            setEdges((eds) => {
+              const updated = eds.map((e) =>
+                e.id === id ? { ...e, data: { ...e.data, [key]: value } } : e
+              );
+              setTimeout(() => emitChange(nodes, updated), 0);
+              return updated;
+            });
+            setSelectedEdge((prev) =>
+              prev && prev.id === id
+                ? { ...prev, data: { ...prev.data, [key]: value } }
+                : prev
             );
           }}
           theme={theme}

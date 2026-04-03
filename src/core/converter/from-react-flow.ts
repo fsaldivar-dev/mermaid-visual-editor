@@ -24,7 +24,7 @@ export function fromReactFlow(
     source: edge.source,
     target: edge.target,
     label: edge.label as string | undefined,
-    properties: {},
+    properties: (edge.data as Record<string, unknown>) || {},
   }));
 
   return { type, direction, elements, connections, metadata: {} };

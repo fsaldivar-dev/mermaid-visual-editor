@@ -25,6 +25,7 @@ export function toReactFlow(model: DiagramModel): ReactFlowData {
     type: "smoothstep",
     markerEnd: { type: "arrowclosed" as const },
     style: { strokeWidth: 2 },
+    data: { ...conn.properties },
   }));
 
   return { nodes, edges };
