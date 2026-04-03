@@ -161,6 +161,46 @@ export function VisualEditor({
     [setNodes, edges, emitChange]
   );
 
+  const updateNodeProperty = useCallback(
+    (id: string, key: string, value: unknown) => {
+      setNodes((nds) => {
+        const updated = nds.map((n) => {
+          if (n.id !== id) return n;
+          const newData = { ...n.data, [key]: value };
+
+          // For sequence messages: recalculate derived fields when From/To/Type changes
+          if (newData.isMessage && (key === "sourceParticipant" || key === "targetParticipant" || key === "messageType")) {
+            const src = newData.sourceParticipant as string;
+            const tgt = newData.targetParticipant as string;
+            const msgType = (newData.messageType as string) || "->>";
+
+            // Find participant indices from current nodes
+            const participants = nds.filter((p) => p.data?.isParticipant);
+            const srcIdx = participants.findIndex((p) => p.id === src);
+            const tgtIdx = participants.findIndex((p) => p.id === tgt);
+            const leftIdx = Math.min(srcIdx, tgtIdx);
+            const rightIdx = Math.max(srcIdx, tgtIdx);
+
+            const SPACING = 220;
+            const P_WIDTH = 100;
+
+            newData.goesRight = tgtIdx > srcIdx;
+            newData.isReply = msgType.includes("--");
+            newData.width = Math.max((rightIdx - leftIdx) * SPACING, SPACING);
+
+            const leftLifelineX = leftIdx * SPACING + P_WIDTH / 2;
+            return { ...n, data: newData, position: { ...n.position, x: leftLifelineX } };
+          }
+
+          return { ...n, data: newData };
+        });
+        setTimeout(() => emitChange(updated, edges), 0);
+        return updated;
+      });
+    },
+    [setNodes, edges, emitChange]
+  );
+
   const updateEdgeLabel = useCallback(
     (id: string, label: string) => {
       setEdges((eds) => {
@@ -229,6 +269,9 @@ export function VisualEditor({
           selectedNode={selectedNode}
           selectedEdge={selectedEdge}
           diagramType={model.type}
+          participants={nodes
+            .filter((n) => n.data?.isParticipant)
+            .map((n) => ({ id: n.id, label: (n.data?.label as string) || n.id }))}
           onNodeLabelChange={(id, label) => {
             updateNodeLabel(id, label);
             setSelectedNode((prev) =>
@@ -241,6 +284,14 @@ export function VisualEditor({
             updateNodeType(id, type);
             setSelectedNode((prev) =>
               prev && prev.id === id ? { ...prev, type } : prev
+            );
+          }}
+          onNodePropertyChange={(id, key, value) => {
+            updateNodeProperty(id, key, value);
+            setSelectedNode((prev) =>
+              prev && prev.id === id
+                ? { ...prev, data: { ...prev.data, [key]: value } }
+                : prev
             );
           }}
           onEdgeLabelChange={(id, label) => {

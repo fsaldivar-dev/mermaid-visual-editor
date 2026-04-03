@@ -345,6 +345,34 @@
   border-color: rgba(255, 255, 255, 0.12);
 }
 
+.mve-flip-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 6px;
+  background: transparent;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+  flex-shrink: 0;
+}
+
+.mve-flip-btn:hover {
+  background: rgba(0, 113, 227, 0.1);
+  border-color: #0071e3;
+}
+
+[data-theme="dark"] .mve-flip-btn {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="dark"] .mve-flip-btn:hover {
+  background: rgba(100, 180, 255, 0.1);
+}
+
 /* ══════════════════════════════════════════════════════════════
    Specialized Node Styles
    ══════════════════════════════════════════════════════════════ */

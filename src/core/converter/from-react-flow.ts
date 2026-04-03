@@ -7,13 +7,17 @@ export function fromReactFlow(
   type: DiagramType = "flowchart",
   direction: Direction = "TD"
 ): DiagramModel {
-  const elements: DiagramElement[] = nodes.map((node) => ({
-    id: node.id,
-    label: (node.data?.label as string) || node.id,
-    shape: (node.type as NodeShape) || "rect",
-    position: node.position,
-    properties: {},
-  }));
+  const elements: DiagramElement[] = nodes.map((node) => {
+    // Extract properties from data (everything except 'label')
+    const { label, ...properties } = (node.data || {}) as Record<string, unknown>;
+    return {
+      id: node.id,
+      label: (label as string) || node.id,
+      shape: (node.type as NodeShape) || "rect",
+      position: node.position,
+      properties,
+    };
+  });
 
   const connections: DiagramConnection[] = edges.map((edge) => ({
     id: edge.id,
