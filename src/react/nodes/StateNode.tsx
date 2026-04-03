@@ -6,18 +6,32 @@ interface StateNodeProps {
 }
 
 export function StateNode({ data, selected }: StateNodeProps) {
-  const isTerminal = data?.isStart || data?.isEnd;
+  const isStart = data?.isStart;
+  const isEnd = data?.isEnd;
 
-  if (isTerminal) {
+  // Start terminal: filled black circle
+  if (isStart) {
     return (
-      <div className={`mve-node mve-state-terminal ${selected ? "mve-selected" : ""}`}>
-        <Handle type="target" position={Position.Top} />
-        <div className="mve-state-dot" />
+      <div className={`mve-node mve-state-terminal mve-state-start ${selected ? "mve-selected" : ""}`}>
+        <div className="mve-state-start-dot" />
         <Handle type="source" position={Position.Bottom} />
       </div>
     );
   }
 
+  // End terminal: circle with inner dot (bullseye)
+  if (isEnd) {
+    return (
+      <div className={`mve-node mve-state-terminal mve-state-end ${selected ? "mve-selected" : ""}`}>
+        <Handle type="target" position={Position.Top} />
+        <div className="mve-state-end-ring">
+          <div className="mve-state-end-dot" />
+        </div>
+      </div>
+    );
+  }
+
+  // Normal state: rounded rectangle
   return (
     <div className={`mve-node mve-state-node ${selected ? "mve-selected" : ""}`}>
       <Handle type="target" position={Position.Top} />

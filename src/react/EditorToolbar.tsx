@@ -1,3 +1,5 @@
+import type { DiagramType } from "../core/model/types";
+
 export type EditorMode = "visual" | "split" | "inline";
 
 interface Shape {
@@ -6,15 +8,37 @@ interface Shape {
   icon: string;
 }
 
-const SHAPES: Shape[] = [
-  { type: "rect", label: "Rectangle", icon: "\u25ad" },
-  { type: "rounded", label: "Rounded", icon: "\u25a2" },
-  { type: "diamond", label: "Decision", icon: "\u25c7" },
-  { type: "circle", label: "Circle", icon: "\u25cb" },
+const SHAPES_BY_TYPE: Record<string, Shape[]> = {
+  flowchart: [
+    { type: "rect", label: "Rectangle", icon: "\u25ad" },
+    { type: "rounded", label: "Rounded", icon: "\u25a2" },
+    { type: "diamond", label: "Decision", icon: "\u25c7" },
+    { type: "circle", label: "Circle", icon: "\u25cb" },
+  ],
+  state: [
+    { type: "rounded", label: "State", icon: "\u25a2" },
+  ],
+  class: [
+    { type: "rect", label: "Class", icon: "\u25ad" },
+  ],
+  er: [
+    { type: "rect", label: "Entity", icon: "\u25ad" },
+  ],
+  sequence: [
+    { type: "rect", label: "Participant", icon: "\u25ad" },
+  ],
+  mindmap: [
+    { type: "rounded", label: "Topic", icon: "\u25cb" },
+  ],
+};
+
+const DEFAULT_SHAPES: Shape[] = [
+  { type: "rect", label: "Node", icon: "\u25ad" },
 ];
 
 interface EditorToolbarProps {
   mode: EditorMode;
+  diagramType?: DiagramType;
   onModeChange?: (mode: EditorMode) => void;
   onAddNode?: (type: string) => void;
   onDelete?: () => void;
@@ -24,12 +48,16 @@ interface EditorToolbarProps {
 
 export function EditorToolbar({
   mode,
+  diagramType = "flowchart",
   onModeChange,
   onAddNode,
   onDelete,
   onLayout,
   theme = "light",
 }: EditorToolbarProps) {
+  const shapes = SHAPES_BY_TYPE[diagramType] || DEFAULT_SHAPES;
+  const canAddNodes = !["pie", "gantt", "timeline", "journey", "gitgraph"].includes(diagramType);
+
   return (
     <div className="mve-toolbar" data-theme={theme}>
       <div className="mve-toolbar-left">
@@ -49,9 +77,9 @@ export function EditorToolbar({
         )}
       </div>
 
-      {mode === "visual" && (
+      {mode === "visual" && canAddNodes && (
         <div className="mve-toolbar-center">
-          {SHAPES.map((s) => (
+          {shapes.map((s) => (
             <button
               key={s.type}
               className="mve-shape-btn"

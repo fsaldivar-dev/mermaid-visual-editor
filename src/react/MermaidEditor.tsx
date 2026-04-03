@@ -100,6 +100,7 @@ export function MermaidEditor({
       {toolbar && (
         <EditorToolbar
           mode={mode}
+          diagramType={model.type}
           onModeChange={handleModeChange}
           onAddNode={(type) => addNodeRef.current?.(type)}
           onDelete={undefined}

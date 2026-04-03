@@ -444,12 +444,14 @@
 /* ── State Node ── */
 
 .mve-state-node {
-  padding: 10px 20px;
+  padding: 12px 24px;
   background: #fff;
   border: 2px solid #34c759;
-  border-radius: 12px;
-  min-width: 80px;
+  border-radius: 14px;
+  min-width: 90px;
   text-align: center;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .mve-state-node.mve-selected {
@@ -463,29 +465,59 @@
 }
 
 .mve-state-terminal {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: transparent;
 }
 
-.mve-state-dot {
-  width: 20px;
-  height: 20px;
+/* Start: filled black circle */
+.mve-state-start-dot {
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: #1d1d1f;
-  border: 3px solid #1d1d1f;
 }
 
-[data-theme="dark"] .mve-state-dot {
+[data-theme="dark"] .mve-state-start-dot {
   background: #f5f5f7;
+}
+
+.mve-state-start.mve-selected .mve-state-start-dot {
+  box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.4);
+}
+
+/* End: ring with inner dot (bullseye) */
+.mve-state-end-ring {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 3px solid #1d1d1f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-theme="dark"] .mve-state-end-ring {
   border-color: #f5f5f7;
 }
 
-.mve-state-terminal.mve-selected .mve-state-dot {
+.mve-state-end-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #1d1d1f;
+}
+
+[data-theme="dark"] .mve-state-end-dot {
+  background: #f5f5f7;
+}
+
+.mve-state-end.mve-selected .mve-state-end-ring {
   border-color: #ff9500;
+  box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.4);
 }
 
 /* ── Participant (Sequence) Node ── */
