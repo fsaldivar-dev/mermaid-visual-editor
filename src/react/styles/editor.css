@@ -1,0 +1,346 @@
+/* ── Mermaid Visual Editor ── */
+
+.mve-editor {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #1d1d1f;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.mve-editor[data-theme="dark"] {
+  color: #f5f5f7;
+  background: #1c1c1e;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ── Toolbar ── */
+
+.mve-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.mve-toolbar[data-theme="dark"] {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.mve-toolbar-left,
+.mve-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mve-toolbar-center {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  justify-content: center;
+}
+
+.mve-mode-toggle {
+  display: flex;
+  gap: 2px;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 6px;
+  padding: 2px;
+}
+
+.mve-mode-btn {
+  padding: 4px 10px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 500;
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.mve-mode-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.mve-mode-btn.mve-active {
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .mve-mode-toggle {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .mve-mode-btn.mve-active {
+  background: #2c2c2e;
+}
+
+.mve-shape-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 6px;
+  background: transparent;
+  font-size: 11px;
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.mve-shape-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="dark"] .mve-shape-btn {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.mve-shape-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.mve-shape-label {
+  font-weight: 500;
+}
+
+.mve-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 6px;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 600;
+  color: inherit;
+  cursor: pointer;
+}
+
+.mve-action-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.mve-action-btn.mve-danger:hover {
+  background: rgba(255, 59, 48, 0.1);
+  color: #ff3b30;
+}
+
+/* ── Visual Editor ── */
+
+.mve-visual-editor {
+  position: relative;
+  width: 100%;
+}
+
+.mve-visual-editor .react-flow__edge-text {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* ── Node Styles ── */
+
+.mve-node {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1d1d1f;
+  text-align: center;
+  cursor: grab;
+}
+
+[data-theme="dark"] .mve-node {
+  color: #f5f5f7;
+}
+
+.mve-node .react-flow__handle {
+  width: 8px;
+  height: 8px;
+  background: #0071e3;
+  border: 2px solid #fff;
+}
+
+.mve-node.mve-selected .react-flow__handle {
+  background: #ff9500;
+}
+
+[data-theme="dark"] .mve-node .react-flow__handle {
+  border-color: #2c2c2e;
+}
+
+.mve-rect {
+  padding: 10px 20px;
+  background: #fff;
+  border: 2px solid #0071e3;
+  border-radius: 6px;
+}
+
+.mve-rect.mve-selected {
+  border-color: #ff9500;
+  box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.2);
+}
+
+[data-theme="dark"] .mve-rect {
+  background: #2c2c2e;
+  border-color: #6cb4ff;
+}
+
+.mve-rounded {
+  padding: 10px 24px;
+  background: #fff;
+  border: 2px solid #34c759;
+  border-radius: 20px;
+}
+
+.mve-rounded.mve-selected {
+  border-color: #ff9500;
+  box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.2);
+}
+
+[data-theme="dark"] .mve-rounded {
+  background: #2c2c2e;
+  border-color: #30d158;
+}
+
+.mve-diamond {
+  --mve-bg: #fff;
+  position: relative;
+  width: 120px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+}
+
+[data-theme="dark"] .mve-diamond {
+  --mve-bg: #2c2c2e;
+}
+
+.mve-diamond.mve-selected svg polygon {
+  stroke: #ff3b30;
+  stroke-width: 3;
+}
+
+.mve-diamond-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.mve-diamond-label {
+  position: relative;
+  z-index: 1;
+  font-size: 12px;
+  max-width: 80px;
+  text-align: center;
+  word-wrap: break-word;
+}
+
+.mve-circle {
+  width: 80px;
+  height: 80px;
+  padding: 10px;
+  background: #fff;
+  border: 2px solid #af52de;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  word-wrap: break-word;
+  font-size: 11px;
+}
+
+.mve-circle.mve-selected {
+  border-color: #ff9500;
+  box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.2);
+}
+
+[data-theme="dark"] .mve-circle {
+  background: #2c2c2e;
+  border-color: #bf5af2;
+}
+
+/* ── Properties Panel ── */
+
+.mve-properties {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 240px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.mve-properties[data-theme="dark"] {
+  background: #2c2c2e;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.mve-properties h4 {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(0, 0, 0, 0.35);
+  margin: 0 0 10px;
+}
+
+.mve-properties[data-theme="dark"] h4 {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.mve-properties label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 10px;
+}
+
+.mve-properties label span {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.4);
+  text-transform: uppercase;
+}
+
+.mve-properties[data-theme="dark"] label span {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.mve-properties input,
+.mve-properties select {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 6px;
+  font-size: 13px;
+  background: transparent;
+  color: inherit;
+  outline: none;
+}
+
+.mve-properties input:focus,
+.mve-properties select:focus {
+  border-color: #0071e3;
+}
+
+.mve-properties[data-theme="dark"] input,
+.mve-properties[data-theme="dark"] select {
+  border-color: rgba(255, 255, 255, 0.12);
+}
