@@ -228,6 +228,7 @@ export function VisualEditor({
         <PropertiesPanel
           selectedNode={selectedNode}
           selectedEdge={selectedEdge}
+          diagramType={model.type}
           onNodeLabelChange={(id, label) => {
             updateNodeLabel(id, label);
             setSelectedNode((prev) =>

@@ -552,6 +552,14 @@
   border-color: #6cb4ff;
 }
 
+/* Hide handles on participants too — they're not connectable in sequence */
+.mve-participant-node .react-flow__handle {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
+}
+
 .mve-participant-lifeline {
   width: 2px;
   background: rgba(0, 0, 0, 0.2);
@@ -580,8 +588,19 @@
   display: none !important;
 }
 
-.mve-message-node.mve-selected .mve-message-line {
-  background: #ff9500 !important;
+/* Selection: subtle highlight instead of changing the arrow color */
+.mve-message-node.mve-selected {
+  background: rgba(0, 113, 227, 0.06);
+  border-radius: 4px;
+}
+
+/* Also hide handles when the node has the react-flow selected class */
+.mve-message-node .react-flow__handle,
+.react-flow__node-message .react-flow__handle {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
 }
 
 .mve-message-arrow {
