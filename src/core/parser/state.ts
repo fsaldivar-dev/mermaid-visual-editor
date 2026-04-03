@@ -13,7 +13,7 @@ export function parseStateDiagram(text: string): DiagramModel {
       label: isStart ? "\u25cf" : id,
       shape: isStart ? "circle" : "rounded",
       position: { x: 0, y: 0 },
-      properties: {},
+      properties: { isStart: isStart, isEnd: false },
     });
   };
 

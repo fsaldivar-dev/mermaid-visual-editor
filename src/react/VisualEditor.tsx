@@ -13,7 +13,7 @@ import {
   type Edge,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { nodeTypes } from "./nodes";
+import { getNodeTypes } from "./nodes";
 import { PropertiesPanel } from "./PropertiesPanel";
 import type { DiagramModel } from "../core/model/types";
 import { toReactFlow } from "../core/converter/to-react-flow";
@@ -51,6 +51,9 @@ export function VisualEditor({
   const [edges, setEdges, onEdgesChange] = useEdgesState(initial.edges);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
+
+  // Get node types for current diagram type
+  const currentNodeTypes = useMemo(() => getNodeTypes(model.type), [model.type]);
 
   // Sync from external model changes
   useEffect(() => {
@@ -210,7 +213,7 @@ export function VisualEditor({
         onEdgeClick={onEdgeClick}
         onPaneClick={onPaneClick}
         defaultEdgeOptions={defaultEdgeOptions}
-        nodeTypes={nodeTypes}
+        nodeTypes={currentNodeTypes}
         fitView
         colorMode={theme === "dark" ? "dark" : "light"}
       >

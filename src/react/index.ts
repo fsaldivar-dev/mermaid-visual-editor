@@ -9,7 +9,24 @@ export type { EditorMode } from "./EditorToolbar";
 
 export { PropertiesPanel } from "./PropertiesPanel";
 
-export { nodeTypes, RectNode, RoundedNode, DiamondNode, CircleNode } from "./nodes";
+export {
+  nodeTypes,
+  getNodeTypes,
+  RectNode,
+  RoundedNode,
+  DiamondNode,
+  CircleNode,
+  ClassNode,
+  EntityNode,
+  StateNode,
+  ParticipantNode,
+  GanttTaskNode,
+  PieSliceNode,
+  TimelineNode,
+  MindmapNode,
+  GitCommitNode,
+  JourneyStepNode,
+} from "./nodes";
 
 export { useDiagramModel } from "./hooks/useDiagramModel";
 export { useSync } from "./hooks/useSync";

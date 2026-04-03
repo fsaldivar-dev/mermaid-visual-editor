@@ -10,7 +10,10 @@ export function toReactFlow(model: DiagramModel): ReactFlowData {
   const nodes: Node[] = model.elements.map((el) => ({
     id: el.id,
     type: el.shape,
-    data: { label: el.label },
+    data: {
+      label: el.label,
+      ...el.properties,
+    },
     position: el.position,
   }));
 
