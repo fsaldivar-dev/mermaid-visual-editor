@@ -17,7 +17,23 @@ export type DiagramType =
 
 export type Direction = "TD" | "TB" | "LR" | "RL" | "BT";
 
-export type NodeShape = "rect" | "rounded" | "diamond" | "circle";
+export type NodeShape =
+  | "rect"
+  | "rounded"
+  | "diamond"
+  | "circle"
+  // Specialized shapes for specific diagram types
+  | "participant"
+  | "message"
+  | "state"
+  | "entity"
+  | "classNode"
+  | "ganttTask"
+  | "pieSlice"
+  | "timelineEvent"
+  | "mindmapNode"
+  | "gitCommit"
+  | "journeyStep";
 
 export interface DiagramElement {
   id: string;

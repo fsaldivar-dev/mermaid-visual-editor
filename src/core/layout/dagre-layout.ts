@@ -4,8 +4,14 @@ import type { DiagramModel, Direction } from "../model/types";
 const NODE_WIDTH = 172;
 const NODE_HEIGHT = 60;
 
+// Diagram types that handle their own layout (positions set by parser)
+const SELF_LAYOUT_TYPES = new Set(["sequence", "pie"]);
+
 export function applyDagreLayout(model: DiagramModel): DiagramModel {
   if (!model.elements.length) return model;
+
+  // Some diagram types position nodes in their parser — skip dagre
+  if (SELF_LAYOUT_TYPES.has(model.type)) return model;
 
   const g = new dagre.graphlib.Graph();
 

@@ -523,39 +523,142 @@
 /* ── Participant (Sequence) Node ── */
 
 .mve-participant-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: transparent;
+}
+
+.mve-participant-box {
+  padding: 10px 24px;
   background: #fff;
   border: 2px solid #0071e3;
   border-radius: 6px;
-  min-width: 100px;
+  font-weight: 600;
+  font-size: 14px;
   text-align: center;
-  padding-bottom: 0;
+  min-width: 80px;
+  position: relative;
+  z-index: 2;
 }
 
-.mve-participant-node.mve-selected {
+.mve-participant-node.mve-selected .mve-participant-box {
   border-color: #ff9500;
   box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.2);
 }
 
-[data-theme="dark"] .mve-participant-node {
+[data-theme="dark"] .mve-participant-box {
   background: #2c2c2e;
   border-color: #6cb4ff;
 }
 
-.mve-participant-header {
-  padding: 8px 16px;
-  font-weight: 600;
-  font-size: 13px;
-}
-
 .mve-participant-lifeline {
   width: 2px;
-  height: 40px;
-  background: rgba(0, 0, 0, 0.15);
-  margin: 0 auto;
+  background: rgba(0, 0, 0, 0.2);
+  margin-top: 0;
+  z-index: 1;
 }
 
 [data-theme="dark"] .mve-participant-lifeline {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ── Message (Sequence) Node ── */
+
+.mve-message-node {
+  position: relative;
+  height: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.mve-message-node.mve-selected .mve-message-line {
+  background: #ff9500;
+}
+
+.mve-message-arrow {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.mve-message-line {
+  flex: 1;
+  height: 2px;
+  background: #1d1d1f;
+}
+
+.mve-message-arrow.mve-reply .mve-message-line {
+  background: repeating-linear-gradient(
+    90deg,
+    #1d1d1f 0px,
+    #1d1d1f 6px,
+    transparent 6px,
+    transparent 10px
+  );
+  height: 2px;
+}
+
+[data-theme="dark"] .mve-message-line {
+  background: #f5f5f7;
+}
+
+[data-theme="dark"] .mve-message-arrow.mve-reply .mve-message-line {
+  background: repeating-linear-gradient(
+    90deg,
+    #f5f5f7 0px,
+    #f5f5f7 6px,
+    transparent 6px,
+    transparent 10px
+  );
+}
+
+.mve-message-head {
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 10px solid #1d1d1f;
+  flex-shrink: 0;
+}
+
+.mve-message-arrow.mve-left .mve-message-head {
+  order: -1;
+  border-left: none;
+  border-right: 10px solid #1d1d1f;
+}
+
+[data-theme="dark"] .mve-message-head {
+  border-left-color: #f5f5f7;
+}
+
+[data-theme="dark"] .mve-message-arrow.mve-left .mve-message-head {
+  border-right-color: #f5f5f7;
+}
+
+.mve-message-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #1d1d1f;
+  white-space: nowrap;
+  margin-top: 2px;
+  text-align: center;
+}
+
+.mve-message-label.mve-reply {
+  font-style: italic;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .mve-message-label {
+  color: #f5f5f7;
+}
+
+[data-theme="dark"] .mve-message-label.mve-reply {
+  color: rgba(255, 255, 255, 0.5);
 }
 
 /* ── Gantt Task Node ── */

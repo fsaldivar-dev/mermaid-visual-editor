@@ -13,6 +13,7 @@ import { TimelineNode } from "./TimelineNode";
 import { MindmapNode } from "./MindmapNode";
 import { GitCommitNode } from "./GitCommitNode";
 import { JourneyStepNode } from "./JourneyStepNode";
+import { MessageNode } from "./MessageNode";
 
 // Base node types (used by flowchart)
 export const baseNodeTypes = {
@@ -44,8 +45,8 @@ export const diagramNodeTypes: Record<string, Record<string, React.ComponentType
   },
   sequence: {
     ...baseNodeTypes,
-    rect: ParticipantNode,
     participant: ParticipantNode,
+    message: MessageNode,
   },
   gantt: {
     ...baseNodeTypes,
@@ -103,4 +104,5 @@ export {
   MindmapNode,
   GitCommitNode,
   JourneyStepNode,
+  MessageNode,
 };

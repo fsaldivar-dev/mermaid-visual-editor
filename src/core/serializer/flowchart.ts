@@ -1,6 +1,6 @@
-import type { DiagramModel, NodeShape } from "../model/types";
+import type { DiagramModel } from "../model/types";
 
-const SHAPE_MAP: Record<NodeShape, (id: string, label: string) => string> = {
+const SHAPE_MAP: Record<string, (id: string, label: string) => string> = {
   rect: (id, label) => `${id}["${label}"]`,
   rounded: (id, label) => `${id}("${label}")`,
   diamond: (id, label) => `${id}{"${label}"}`,

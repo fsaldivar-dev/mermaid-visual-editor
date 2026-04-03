@@ -148,9 +148,13 @@ describe("parseSequenceDiagram", () => {
       "sequenceDiagram\n    Alice->>Bob: Hello\n    Bob-->>Alice: Hi"
     );
     expect(model.type).toBe("sequence");
-    expect(model.elements).toHaveLength(2);
-    expect(model.connections).toHaveLength(2);
-    expect(model.connections[0].label).toBe("Hello");
+    // 2 participants + 2 message nodes
+    const participants = model.elements.filter((e) => e.properties.isParticipant);
+    const messages = model.elements.filter((e) => e.properties.isMessage);
+    expect(participants).toHaveLength(2);
+    expect(messages).toHaveLength(2);
+    expect(messages[0].label).toBe("Hello");
+    expect(messages[1].properties.isReply).toBe(true);
   });
 });
 
