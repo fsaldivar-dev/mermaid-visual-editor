@@ -1,7 +1,8 @@
-import type { DiagramModel, DiagramElement, DiagramConnection } from "../model/types";
+import type { DiagramModel, DiagramElement } from "../model/types";
 
 const PARTICIPANT_SPACING = 220;
-const MESSAGE_Y_START = 100;
+const PARTICIPANT_WIDTH = 100;
+const MESSAGE_Y_START = 80;
 const MESSAGE_Y_STEP = 60;
 
 export function parseSequenceDiagram(text: string): DiagramModel {
@@ -10,7 +11,6 @@ export function parseSequenceDiagram(text: string): DiagramModel {
   const participantLabels = new Map<string, string>();
   const messages: { src: string; tgt: string; label: string; type: string }[] = [];
 
-  // First pass: collect participants and messages
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i];
     const part = line.match(/^(?:participant|actor)\s+(\w+)(?:\s+as\s+(.+))?$/i);
@@ -22,22 +22,20 @@ export function parseSequenceDiagram(text: string): DiagramModel {
     }
     const msg = line.match(/^(\S+?)\s*(->>|-->>|->|-->)\+?\s*(\S+?)\s*:\s*(.+)$/);
     if (msg) {
-      const src = msg[1];
-      const tgt = msg[3];
-      if (!participantOrder.includes(src)) participantOrder.push(src);
-      if (!participantOrder.includes(tgt)) participantOrder.push(tgt);
-      messages.push({ src, tgt, label: msg[4], type: msg[2] });
+      if (!participantOrder.includes(msg[1])) participantOrder.push(msg[1]);
+      if (!participantOrder.includes(msg[3])) participantOrder.push(msg[3]);
+      messages.push({ src: msg[1], tgt: msg[3], label: msg[4], type: msg[2] });
     }
   }
 
   const elements: DiagramElement[] = [];
-  const connections: DiagramConnection[] = [];
 
-  // Create participant nodes — positioned in a row at top
+  // Participant center X positions (lifeline X)
   const participantIndexMap = new Map<string, number>();
+  const lifelineHeight = MESSAGE_Y_START + messages.length * MESSAGE_Y_STEP + 40;
+
   participantOrder.forEach((id, i) => {
     participantIndexMap.set(id, i);
-    const lifelineHeight = MESSAGE_Y_START + messages.length * MESSAGE_Y_STEP + 40;
     elements.push({
       id,
       label: participantLabels.get(id) || id,
@@ -51,29 +49,33 @@ export function parseSequenceDiagram(text: string): DiagramModel {
     });
   });
 
-  // Create message nodes — positioned between participants at staggered Y
+  // Messages: position X at the leftmost participant's lifeline center,
+  // width spans between the two lifelines
   messages.forEach((msg, i) => {
     const srcIdx = participantIndexMap.get(msg.src) ?? 0;
     const tgtIdx = participantIndexMap.get(msg.tgt) ?? 0;
     const leftIdx = Math.min(srcIdx, tgtIdx);
     const rightIdx = Math.max(srcIdx, tgtIdx);
-    const msgY = MESSAGE_Y_START + i * MESSAGE_Y_STEP;
-    const msgX = leftIdx * PARTICIPANT_SPACING + PARTICIPANT_SPACING / 2;
     const isReply = msg.type.includes("--");
-    const isRight = tgtIdx > srcIdx;
+    const goesRight = tgtIdx > srcIdx;
 
-    const msgId = `msg_${i}`;
+    // Lifeline center X = participantX + PARTICIPANT_WIDTH/2
+    // Message X starts at left lifeline center
+    const leftLifelineX = leftIdx * PARTICIPANT_SPACING + PARTICIPANT_WIDTH / 2;
+    const msgWidth = (rightIdx - leftIdx) * PARTICIPANT_SPACING;
+    const msgY = MESSAGE_Y_START + i * MESSAGE_Y_STEP;
+
     elements.push({
-      id: msgId,
+      id: `msg_${i}`,
       label: msg.label,
       shape: "message",
-      position: { x: msgX, y: msgY },
+      position: { x: leftLifelineX, y: msgY },
       properties: {
         isMessage: true,
         messageType: msg.type,
         isReply,
-        isRight,
-        width: (rightIdx - leftIdx) * PARTICIPANT_SPACING,
+        goesRight,
+        width: msgWidth,
         sourceParticipant: msg.src,
         targetParticipant: msg.tgt,
       },
@@ -84,7 +86,7 @@ export function parseSequenceDiagram(text: string): DiagramModel {
     type: "sequence",
     direction: "LR",
     elements,
-    connections, // empty — messages are rendered as nodes, not edges
+    connections: [],
     metadata: {},
   };
 }
