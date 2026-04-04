@@ -45,6 +45,67 @@ export function parseStateDiagram(text: string): DiagramModel {
   // Second pass: build nodes and edges
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i];
+
+    // Parse state declarations with stereotypes: state fork_state <<fork>>
+    const stereoMatch = line.match(/^state\s+(\S+)\s+<<(\w+)>>$/);
+    if (stereoMatch) {
+      const id = stereoMatch[1];
+      const stereotype = stereoMatch[2];
+      if (stereotype === "fork" || stereotype === "join") {
+        elementsMap.set(id, {
+          id,
+          label: "",
+          shape: "forkJoin",
+          position: { x: 0, y: 0 },
+          properties: { isFork: stereotype === "fork", isJoin: stereotype === "join" },
+        });
+      } else if (stereotype === "choice") {
+        elementsMap.set(id, {
+          id,
+          label: "",
+          shape: "choice",
+          position: { x: 0, y: 0 },
+          properties: {},
+        });
+      }
+      continue;
+    }
+
+    // Parse state with label: state "Label" as id
+    const stateAsMatch = line.match(/^state\s+"([^"]+)"\s+as\s+(\S+)$/);
+    if (stateAsMatch) {
+      const label = stateAsMatch[1];
+      const id = stateAsMatch[2];
+      if (!elementsMap.has(id)) {
+        elementsMap.set(id, {
+          id,
+          label,
+          shape: "rounded",
+          position: { x: 0, y: 0 },
+          properties: {},
+        });
+      }
+      continue;
+    }
+
+    // Parse notes: note right of StateName : text
+    const noteMatch = line.match(/^note\s+(right|left)\s+of\s+(\S+)\s*:\s*(.+)$/);
+    if (noteMatch) {
+      const side = noteMatch[1];
+      const targetState = noteMatch[2];
+      const noteText = noteMatch[3].trim();
+      const noteId = `_note_${elementsMap.size}`;
+      elementsMap.set(noteId, {
+        id: noteId,
+        label: noteText,
+        shape: "note",
+        position: { x: 0, y: 0 },
+        properties: { noteOf: targetState, noteSide: side },
+      });
+      continue;
+    }
+
+    // Parse transitions: src --> tgt : label
     const m = line.match(/^(\S+)\s*-->\s*(\S+)\s*(?::\s*(.+))?$/);
     if (m) {
       const srcId = resolveId(m[1], true);

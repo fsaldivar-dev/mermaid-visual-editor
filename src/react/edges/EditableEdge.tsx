@@ -13,6 +13,9 @@ function resolveMarker(markerType: string | undefined, fallback: string | undefi
     case "arrowclosed": return "url(#mve-marker-arrowclosed)";
     case "circle": return "url(#mve-marker-circle)";
     case "cross": return "url(#mve-marker-cross)";
+    case "triangle": return "url(#mve-marker-triangle)";
+    case "diamond-filled": return "url(#mve-marker-diamond-filled)";
+    case "diamond-hollow": return "url(#mve-marker-diamond-hollow)";
     case "none": return undefined;
     default: return fallback;
   }

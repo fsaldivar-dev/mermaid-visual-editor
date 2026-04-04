@@ -15,6 +15,7 @@ import { ClassNode } from "./ClassNode";
 import { EntityNode } from "./EntityNode";
 import { StateNode } from "./StateNode";
 import { ParticipantNode } from "./ParticipantNode";
+import { ActorNode } from "./ActorNode";
 import { GanttTaskNode } from "./GanttTaskNode";
 import { PieSliceNode } from "./PieSliceNode";
 import { TimelineNode } from "./TimelineNode";
@@ -22,6 +23,9 @@ import { MindmapNode } from "./MindmapNode";
 import { GitCommitNode } from "./GitCommitNode";
 import { JourneyStepNode } from "./JourneyStepNode";
 import { MessageNode } from "./MessageNode";
+import { ForkJoinNode } from "./ForkJoinNode";
+import { ChoiceNode } from "./ChoiceNode";
+import { NoteNode } from "./NoteNode";
 
 // Base node types (used by flowchart)
 export const baseNodeTypes = {
@@ -48,6 +52,9 @@ export const diagramNodeTypes: Record<string, Record<string, React.ComponentType
     state: StateNode,
     rounded: StateNode,
     circle: StateNode,
+    forkJoin: ForkJoinNode,
+    choice: ChoiceNode,
+    note: NoteNode,
   },
   class: {
     ...baseNodeTypes,
@@ -62,6 +69,7 @@ export const diagramNodeTypes: Record<string, Record<string, React.ComponentType
   sequence: {
     ...baseNodeTypes,
     participant: ParticipantNode,
+    actor: ActorNode,
     message: MessageNode,
   },
   gantt: {
@@ -122,6 +130,7 @@ export {
   EntityNode,
   StateNode,
   ParticipantNode,
+  ActorNode,
   GanttTaskNode,
   PieSliceNode,
   TimelineNode,
@@ -129,4 +138,7 @@ export {
   GitCommitNode,
   JourneyStepNode,
   MessageNode,
+  ForkJoinNode,
+  ChoiceNode,
+  NoteNode,
 };

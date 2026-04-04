@@ -38,16 +38,30 @@ const CATEGORIES_BY_TYPE: Record<string, ShapeCategory[]> = {
     },
   ],
   state: [
-    { name: "States", shapes: [{ type: "rounded", label: "State", icon: "\u25a2" }] },
+    { name: "States", shapes: [
+      { type: "rounded", label: "State", icon: "\u25a2" },
+      { type: "forkJoin", label: "Fork/Join", icon: "\u2501" },
+      { type: "choice", label: "Choice", icon: "\u25c6" },
+      { type: "note", label: "Note", icon: "\ud83d\udcdd" },
+    ]},
   ],
   class: [
-    { name: "Classes", shapes: [{ type: "rect", label: "Class", icon: "\u25ad" }] },
+    {
+      name: "Classes",
+      shapes: [
+        { type: "rect", label: "Class", icon: "\u25ad" },
+        { type: "rect", label: "Interface", icon: "\u25a1" },
+      ],
+    },
   ],
   er: [
     { name: "Entities", shapes: [{ type: "rect", label: "Entity", icon: "\u25ad" }] },
   ],
   sequence: [
-    { name: "Sequence", shapes: [{ type: "rect", label: "Participant", icon: "\u25ad" }] },
+    { name: "Sequence", shapes: [
+      { type: "rect", label: "Participant", icon: "\u25ad" },
+      { type: "actor", label: "Actor", icon: "\ud83e\uddcd" },
+    ]},
   ],
   mindmap: [
     { name: "Topics", shapes: [{ type: "rounded", label: "Topic", icon: "\u25cb" }] },

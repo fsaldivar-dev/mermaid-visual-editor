@@ -49,8 +49,36 @@ export function toReactFlow(model: DiagramModel): ReactFlowData {
   });
 
   const edges: Edge[] = model.connections.map((conn) => {
-    const markerEndType = (conn.properties.markerEndType as string) || "arrowclosed";
-    const markerStartType = (conn.properties.markerStartType as string) || undefined;
+    const relationshipType = conn.properties.relationshipType as string | undefined;
+    let markerEndType = (conn.properties.markerEndType as string) || "arrowclosed";
+    let markerStartType = (conn.properties.markerStartType as string) || undefined;
+    let lineStyle = conn.properties.lineStyle as string | undefined;
+
+    // Map class diagram relationship types to marker types
+    if (relationshipType) {
+      switch (relationshipType) {
+        case "<|--": // Inheritance
+          markerEndType = "triangle";
+          break;
+        case "*--": // Composition
+          markerEndType = "diamond-filled";
+          break;
+        case "o--": // Aggregation
+          markerEndType = "diamond-hollow";
+          break;
+        case "-->": // Association
+          markerEndType = "arrowclosed";
+          break;
+        case "..>": // Dependency
+          markerEndType = "arrowclosed";
+          lineStyle = "dotted";
+          break;
+        case "<|..": // Realization
+          markerEndType = "triangle";
+          lineStyle = "dotted";
+          break;
+      }
+    }
 
     // Build markerEnd/markerStart based on custom types
     // These are used as defaults; EditableEdge resolves custom markers from data
@@ -63,6 +91,11 @@ export function toReactFlow(model: DiagramModel): ReactFlowData {
       markerStart = { type: "arrowclosed" as const };
     }
 
+    const properties = { ...conn.properties };
+    if (markerEndType) properties.markerEndType = markerEndType;
+    if (markerStartType) properties.markerStartType = markerStartType;
+    if (lineStyle) properties.lineStyle = lineStyle;
+
     return {
       id: conn.id,
       source: conn.source,
@@ -74,7 +107,7 @@ export function toReactFlow(model: DiagramModel): ReactFlowData {
       ...(markerEnd ? { markerEnd } : {}),
       ...(markerStart ? { markerStart } : {}),
       style: { strokeWidth: 2 },
-      data: { ...conn.properties },
+      data: properties,
     };
   });
 
