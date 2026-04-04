@@ -1,4 +1,4 @@
-import { Handle, Position } from "@xyflow/react";
+import { Handle, Position, NodeResizer } from "@xyflow/react";
 
 interface MindmapNodeProps {
   data: { label?: string; depth?: number };
@@ -19,9 +19,18 @@ export function MindmapNode({ data, selected }: MindmapNodeProps) {
       className={`mve-node mve-mindmap-node ${isRoot ? "mve-mindmap-root" : ""} ${selected ? "mve-selected" : ""}`}
       style={{ borderColor: color }}
     >
-      <Handle type="target" position={Position.Left} />
+      <NodeResizer
+        isVisible={!!selected}
+        minWidth={50}
+        minHeight={30}
+        handleClassName="mve-resize-handle"
+        lineClassName="mve-resize-line"
+      />
+      <Handle type="source" position={Position.Top} id="top" className="mve-handle" />
+      <Handle type="source" position={Position.Bottom} id="bottom" className="mve-handle" />
+      <Handle type="source" position={Position.Left} id="left" className="mve-handle" />
+      <Handle type="source" position={Position.Right} id="right" className="mve-handle" />
       <span>{data?.label || ""}</span>
-      <Handle type="source" position={Position.Right} />
     </div>
   );
 }
