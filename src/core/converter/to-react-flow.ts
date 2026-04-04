@@ -48,11 +48,29 @@ export function toReactFlow(model: DiagramModel): ReactFlowData {
     return 0;
   });
 
+  const isER = model.type === "er";
+
   const edges: Edge[] = model.connections.map((conn) => {
     const relationshipType = conn.properties.relationshipType as string | undefined;
     let markerEndType = (conn.properties.markerEndType as string) || "arrowclosed";
     let markerStartType = (conn.properties.markerStartType as string) || undefined;
     let lineStyle = conn.properties.lineStyle as string | undefined;
+
+    // For ER diagrams, use the cardinality string as the edge label
+    // and suppress default arrow markers
+    if (isER) {
+      const cardinality = conn.properties.cardinality as string | undefined;
+      if (cardinality) {
+        conn = { ...conn, label: conn.label ? `${conn.label} [${cardinality}]` : cardinality };
+      }
+      // ER relationships don't use arrow markers
+      markerEndType = "none";
+      markerStartType = undefined;
+      // Check for dotted line style (identifying relationships use "..")
+      if (cardinality && cardinality.includes("..")) {
+        lineStyle = "dotted";
+      }
+    }
 
     // Map class diagram relationship types to marker types
     if (relationshipType) {
@@ -83,7 +101,9 @@ export function toReactFlow(model: DiagramModel): ReactFlowData {
     // Build markerEnd/markerStart based on custom types
     // These are used as defaults; EditableEdge resolves custom markers from data
     let markerEnd: Edge["markerEnd"] = undefined;
-    if (markerEndType === "arrowclosed" || !markerEndType) {
+    if (markerEndType === "none") {
+      markerEnd = undefined;
+    } else if (markerEndType === "arrowclosed" || !markerEndType) {
       markerEnd = { type: "arrowclosed" as const };
     }
     let markerStart: Edge["markerStart"] = undefined;

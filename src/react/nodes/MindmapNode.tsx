@@ -1,27 +1,39 @@
 import { Handle, Position, NodeResizer } from "@xyflow/react";
 
+const BRANCH_COLORS = [
+  "#3b82f6", "#10b981", "#f59e0b", "#ef4444",
+  "#8b5cf6", "#ec4899", "#06b6d4", "#84cc16",
+];
+
 interface MindmapNodeProps {
-  data: { label?: string; depth?: number };
+  data: { label?: string; depth?: number; branchIndex?: number };
   selected?: boolean;
 }
 
-const DEPTH_COLORS = [
-  "#0071e3", "#34c759", "#ff9500", "#af52de", "#ff3b30", "#5ac8fa",
-];
-
 export function MindmapNode({ data, selected }: MindmapNodeProps) {
-  const depth = data?.depth ?? 0;
-  const color = DEPTH_COLORS[depth % DEPTH_COLORS.length];
+  const depth = (data?.depth as number) || 0;
+  const branchIndex = (data?.branchIndex as number) || 0;
+  const color = BRANCH_COLORS[branchIndex % BRANCH_COLORS.length];
   const isRoot = depth === 0;
+
+  const nodeClass = isRoot
+    ? "mve-mindmap-root"
+    : depth === 1
+      ? "mve-mindmap-branch"
+      : "mve-mindmap-leaf";
 
   return (
     <div
-      className={`mve-node mve-mindmap-node ${isRoot ? "mve-mindmap-root" : ""} ${selected ? "mve-selected" : ""}`}
-      style={{ borderColor: color }}
+      className={`mve-node mve-mindmap-node ${nodeClass} ${selected ? "mve-selected" : ""}`}
+      style={{
+        borderColor: selected ? "#ff9500" : color,
+        backgroundColor: isRoot ? color : depth === 1 ? color + "20" : color + "10",
+        color: isRoot ? "#fff" : undefined,
+      }}
     >
       <NodeResizer
         isVisible={!!selected}
-        minWidth={50}
+        minWidth={60}
         minHeight={30}
         handleClassName="mve-resize-handle"
         lineClassName="mve-resize-line"

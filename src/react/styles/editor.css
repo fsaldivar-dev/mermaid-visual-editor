@@ -609,9 +609,12 @@
 
 .mve-entity-node {
   background: #fff;
-  border: 2px solid #5856d6;
+  border: 1.5px solid #6366f1;
   border-radius: 6px;
-  min-width: 120px;
+  min-width: 140px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  text-align: left;
 }
 
 .mve-entity-node.mve-selected {
@@ -620,8 +623,8 @@
 }
 
 [data-theme="dark"] .mve-entity-node {
-  background: #2c2c2e;
-  border-color: #7d7aff;
+  background: #1e1b4b;
+  border-color: #818cf8;
 }
 
 .mve-entity-header {
@@ -629,19 +632,78 @@
   font-weight: 700;
   font-size: 13px;
   text-align: center;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  background: #eef2ff;
+  color: #312e81;
+  border-bottom: 1px solid #c7d2fe;
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
 
+[data-theme="dark"] .mve-entity-header {
+  background: #312e81;
+  color: #e0e7ff;
+  border-bottom-color: #4338ca;
+}
+
 .mve-entity-attrs {
-  padding: 6px 14px;
+  padding: 4px 0;
 }
 
 .mve-entity-attr {
-  padding: 2px 0;
+  padding: 3px 10px;
   font-size: 11px;
-  font-family: "SF Mono", Menlo, monospace;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mve-entity-attr-type {
+  color: #6366f1;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 10px;
+  min-width: 48px;
+}
+
+[data-theme="dark"] .mve-entity-attr-type {
+  color: #a5b4fc;
+}
+
+.mve-entity-attr-name {
+  color: #1e293b;
+  font-size: 11px;
+  flex: 1;
+}
+
+[data-theme="dark"] .mve-entity-attr-name {
+  color: #e2e8f0;
+}
+
+.mve-entity-attr-key {
+  font-size: 8px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: #e0e7ff;
+  color: #4338ca;
+  text-transform: uppercase;
+}
+
+[data-theme="dark"] .mve-entity-attr-key {
+  background: #4338ca;
+  color: #c7d2fe;
+}
+
+.mve-entity-no-attrs {
+  color: #94a3b8;
+  font-style: italic;
+  font-size: 10px;
+  text-align: center;
+  padding: 6px 10px;
+  display: block;
+}
+
+[data-theme="dark"] .mve-entity-no-attrs {
+  color: #64748b;
 }
 
 /* ── State Node ── */
@@ -1182,32 +1244,48 @@
 
 .mve-mindmap-node {
   padding: 8px 16px;
-  background: #fff;
-  border: 2px solid #0071e3;
+  border: 2px solid #3b82f6;
   border-radius: 16px;
   font-size: 13px;
   font-weight: 500;
-}
-
-.mve-mindmap-root {
-  padding: 12px 24px;
-  font-size: 15px;
-  font-weight: 700;
-  border-radius: 50%;
-  min-width: 80px;
-  min-height: 80px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
+  text-align: center;
+}
+
+.mve-mindmap-root {
+  padding: 16px 28px;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 50%;
+  min-width: 90px;
+  min-height: 90px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.mve-mindmap-branch {
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 12px;
+}
+
+.mve-mindmap-leaf {
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 10px;
 }
 
 .mve-mindmap-node.mve-selected {
   box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.2);
-  border-color: #ff9500;
+  border-color: #ff9500 !important;
 }
 
 [data-theme="dark"] .mve-mindmap-node {
-  background: #2c2c2e;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 /* ── Git Commit Node ── */

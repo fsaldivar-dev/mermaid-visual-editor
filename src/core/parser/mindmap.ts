@@ -3,7 +3,8 @@ import type { DiagramModel, DiagramElement, DiagramConnection, NodeShape } from 
 export function parseMindmap(text: string): DiagramModel {
   const elements: DiagramElement[] = [];
   const connections: DiagramConnection[] = [];
-  const stack: { id: string; indent: number }[] = [];
+  const stack: { id: string; indent: number; branchIndex: number }[] = [];
+  let nextBranchIndex = 0;
   const rawLines = text.split("\n");
 
   for (let i = 1; i < rawLines.length; i++) {
@@ -30,15 +31,30 @@ export function parseMindmap(text: string): DiagramModel {
       }
     }
 
+    while (stack.length && stack[stack.length - 1].indent >= indent) stack.pop();
+
+    const depth = stack.length;
+    let branchIndex = 0;
+
+    if (depth === 0) {
+      // Root node
+      branchIndex = 0;
+    } else if (depth === 1) {
+      // Direct child of root: assign new branch index
+      branchIndex = nextBranchIndex++;
+    } else {
+      // Deeper nodes inherit parent's branchIndex
+      branchIndex = stack[stack.length - 1].branchIndex;
+    }
+
     elements.push({
       id,
       label,
       shape,
       position: { x: 0, y: 0 },
-      properties: { depth: stack.length },
+      properties: { depth, branchIndex },
     });
 
-    while (stack.length && stack[stack.length - 1].indent >= indent) stack.pop();
     if (stack.length) {
       connections.push({
         id: `e${connections.length}`,
@@ -47,7 +63,7 @@ export function parseMindmap(text: string): DiagramModel {
         properties: {},
       });
     }
-    stack.push({ id, indent });
+    stack.push({ id, indent, branchIndex });
   }
 
   return {
