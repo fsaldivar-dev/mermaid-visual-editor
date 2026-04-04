@@ -9,7 +9,7 @@ import { ShapeLibrarySidebar } from "./components/ShapeLibrarySidebar";
 import { ChartView } from "./charts";
 import { useHistory } from "./hooks/useHistory";
 
-const CHART_TYPES = new Set(["pie", "gantt", "journey", "timeline"]);
+const CHART_TYPES = new Set(["pie", "gantt", "journey", "timeline", "mindmap", "er"]);
 
 export interface MermaidEditorProps {
   value?: string;
