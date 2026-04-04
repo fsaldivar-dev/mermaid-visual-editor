@@ -67,6 +67,7 @@ function nodeHasNamedHandles(node: Node): boolean {
   const namedHandleTypes = new Set([
     "rect", "rounded", "circle", "diamond", "default",
     "entity", "classNode", "state",
+    "mindmapNode", "timelineEvent", "pieSlice", "journeyStep", "gitCommit", "ganttTask",
   ]);
   // State terminals only have 1 handle
   if (node.data?.isStart || node.data?.isEnd) return true; // they have ID'd handles now

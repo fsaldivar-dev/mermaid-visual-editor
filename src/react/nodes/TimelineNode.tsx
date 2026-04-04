@@ -1,4 +1,4 @@
-import { Handle, Position } from "@xyflow/react";
+import { Handle, Position, NodeResizer } from "@xyflow/react";
 
 interface TimelineNodeProps {
   data: { label?: string; period?: string };
@@ -13,10 +13,19 @@ export function TimelineNode({ data, selected }: TimelineNodeProps) {
 
   return (
     <div className={`mve-node mve-timeline-node ${selected ? "mve-selected" : ""}`}>
-      <Handle type="target" position={Position.Left} />
+      <NodeResizer
+        isVisible={!!selected}
+        minWidth={50}
+        minHeight={30}
+        handleClassName="mve-resize-handle"
+        lineClassName="mve-resize-line"
+      />
+      <Handle type="source" position={Position.Top} id="top" className="mve-handle" />
+      <Handle type="source" position={Position.Bottom} id="bottom" className="mve-handle" />
+      <Handle type="source" position={Position.Left} id="left" className="mve-handle" />
+      <Handle type="source" position={Position.Right} id="right" className="mve-handle" />
       <div className="mve-timeline-period">{period}</div>
       {events && <div className="mve-timeline-events">{events}</div>}
-      <Handle type="source" position={Position.Right} />
     </div>
   );
 }
