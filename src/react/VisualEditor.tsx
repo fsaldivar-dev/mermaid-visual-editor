@@ -13,6 +13,7 @@ import {
   MarkerType,
   SelectionMode,
   ConnectionMode,
+  reconnectEdge,
   type Connection,
   type Node,
   type Edge,
@@ -91,11 +92,13 @@ function VisualEditorInner({
   const searchState = useSearch(nodes);
   const { guides, computeGuides, clearGuides } = useAlignmentGuides();
 
-  // Sync from external model changes
+  // Sync from external model changes — clear selection when model changes
   useEffect(() => {
     const { nodes: newNodes, edges: newEdges } = toReactFlow(model);
     setNodes(newNodes);
     setEdges(newEdges);
+    setSelectedNode(null);
+    setSelectedEdge(null);
   }, [model, setNodes, setEdges]);
 
   // Emit model changes back
@@ -213,6 +216,18 @@ function VisualEditorInner({
     [setEdges, setNodes, nodes, edges, emitChange, model.type]
   );
 
+  // Reconnect an existing edge to a different node
+  const onReconnect = useCallback(
+    (oldEdge: Edge, newConnection: Connection) => {
+      setEdges((eds) => {
+        const updated = reconnectEdge(oldEdge, newConnection, eds);
+        setTimeout(() => emitChange(nodes, updated), 0);
+        return updated;
+      });
+    },
+    [setEdges, nodes, emitChange]
+  );
+
   const addNode = useCallback(
     (type = "rect", label = "New", position?: { x: number; y: number }) => {
       if (readOnly) return;
@@ -231,6 +246,21 @@ function VisualEditorInner({
       });
     },
     [setNodes, edges, emitChange, readOnly]
+  );
+
+  // When user drops a connection on empty canvas, create a new node at that position
+  const onConnectEnd = useCallback(
+    (event: MouseEvent | TouchEvent) => {
+      if (readOnly) return;
+      const target = event.target as HTMLElement;
+      if (!target?.classList?.contains("react-flow__pane")) return;
+
+      const clientX = "changedTouches" in event ? event.changedTouches[0].clientX : event.clientX;
+      const clientY = "changedTouches" in event ? event.changedTouches[0].clientY : event.clientY;
+      const position = reactFlowInstance.screenToFlowPosition({ x: clientX, y: clientY });
+      addNode("rect", "New", position);
+    },
+    [readOnly, reactFlowInstance, addNode]
   );
 
   // Expose addNode to parent via ref
@@ -516,6 +546,8 @@ function VisualEditorInner({
         onNodesChange={readOnly ? undefined : handleNodesChange}
         onEdgesChange={readOnly ? undefined : onEdgesChange}
         onConnect={readOnly ? undefined : onConnect}
+        onConnectEnd={readOnly ? undefined : onConnectEnd}
+        onReconnect={readOnly ? undefined : onReconnect}
         onNodeClick={onNodeClick}
         onNodeDrag={onNodeDrag}
         onNodeDragStop={onNodeDragStop}
@@ -527,6 +559,7 @@ function VisualEditorInner({
         nodeTypes={currentNodeTypes}
         edgeTypes={edgeTypes}
         fitView
+        fitViewOptions={{ padding: 0.2 }}
         colorMode={theme === "dark" ? "dark" : "light"}
         selectionOnDrag
         selectionMode={SelectionMode.Partial}

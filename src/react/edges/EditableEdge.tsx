@@ -81,6 +81,7 @@ export function EditableEdge({
         style={computedStyle}
         markerEnd={markerEnd}
         markerStart={markerStart}
+        interactionWidth={20}
       />
       {label && (
         <EdgeLabelRenderer>
