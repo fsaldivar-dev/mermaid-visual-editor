@@ -29,7 +29,6 @@ export function GitGraphNodePanel({ node, allNodes, onLabelChange, onPropertyCha
         <input
           value={commitMsg}
           onChange={(e) => onLabelChange(node.id, `${branch}\n${e.target.value}`)}
-          autoFocus
         />
       </label>
       <label>

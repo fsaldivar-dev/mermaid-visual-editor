@@ -190,8 +190,14 @@
 .mve-rect {
   padding: 10px 20px;
   background: #fff;
-  border: 2px solid #0071e3;
+  border: 1.5px solid #0071e3;
   border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.mve-rect:hover {
+  box-shadow: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
 }
 
 .mve-rect.mve-selected {
@@ -207,8 +213,14 @@
 .mve-rounded {
   padding: 10px 24px;
   background: #fff;
-  border: 2px solid #34c759;
+  border: 1.5px solid #34c759;
   border-radius: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.mve-rounded:hover {
+  box-shadow: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
 }
 
 .mve-rounded.mve-selected {
@@ -238,7 +250,7 @@
 
 .mve-diamond.mve-selected svg polygon {
   stroke: #ff3b30;
-  stroke-width: 3;
+  stroke-width: 2.5;
 }
 
 .mve-diamond-bg {
@@ -246,6 +258,7 @@
   inset: 0;
   width: 100%;
   height: 100%;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.08));
 }
 
 .mve-diamond-label {
@@ -262,13 +275,19 @@
   height: 80px;
   padding: 10px;
   background: #fff;
-  border: 2px solid #af52de;
+  border: 1.5px solid #af52de;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   word-wrap: break-word;
   font-size: 11px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.mve-circle:hover {
+  box-shadow: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
 }
 
 .mve-circle.mve-selected {
@@ -279,6 +298,61 @@
 [data-theme="dark"] .mve-circle {
   background: #2c2c2e;
   border-color: #bf5af2;
+}
+
+/* ── New SVG-based Shape Nodes ── */
+
+.mve-stadium, .mve-subroutine, .mve-cylinder, .mve-hexagon,
+.mve-parallelogram, .mve-trapezoid, .mve-asymmetric, .mve-doublecircle {
+  --mve-bg: #fff;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+  min-height: 48px;
+  background: transparent;
+}
+
+[data-theme="dark"] .mve-stadium,
+[data-theme="dark"] .mve-subroutine,
+[data-theme="dark"] .mve-cylinder,
+[data-theme="dark"] .mve-hexagon,
+[data-theme="dark"] .mve-parallelogram,
+[data-theme="dark"] .mve-trapezoid,
+[data-theme="dark"] .mve-asymmetric,
+[data-theme="dark"] .mve-doublecircle {
+  --mve-bg: #2c2c2e;
+}
+
+.mve-doublecircle {
+  min-width: 80px;
+  min-height: 80px;
+}
+
+.mve-cylinder {
+  min-height: 60px;
+}
+
+.mve-shape-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.08));
+}
+
+.mve-shape-label {
+  position: relative;
+  z-index: 1;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  max-width: 90%;
+  text-align: center;
+  word-wrap: break-word;
 }
 
 /* ── Properties Panel ── */

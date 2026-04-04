@@ -5,6 +5,14 @@ const SHAPE_MAP: Record<string, (id: string, label: string) => string> = {
   rounded: (id, label) => `${id}("${label}")`,
   diamond: (id, label) => `${id}{"${label}"}`,
   circle: (id, label) => `${id}(("${label}"))`,
+  stadium: (id, label) => `${id}(["${label}"])`,
+  subroutine: (id, label) => `${id}[["${label}"]]`,
+  cylinder: (id, label) => `${id}[("${label}")]`,
+  hexagon: (id, label) => `${id}{{"${label}"}}`,
+  parallelogram: (id, label) => `${id}[/"${label}"/]`,
+  trapezoid: (id, label) => `${id}[/"${label}"\\]`,
+  asymmetric: (id, label) => `${id}>"${label}"]`,
+  doubleCircle: (id, label) => `${id}((("${label}")))`,
 };
 
 export function serializeFlowchart(model: DiagramModel): string {
@@ -65,10 +73,24 @@ export function serializeFlowchart(model: DiagramModel): string {
 
   // Emit connections
   for (const conn of model.connections) {
+    const lineStyle = (conn.properties.lineStyle as string) || "solid";
+    const markerEndType = (conn.properties.markerEndType as string) || "arrowclosed";
+
+    // Determine the Mermaid edge syntax
+    let edgeSyntax = "-->";
+    if (lineStyle === "dotted" && markerEndType === "arrowclosed") edgeSyntax = "-.->";
+    else if (lineStyle === "dotted" && markerEndType === "none") edgeSyntax = "-.-";
+    else if (lineStyle === "thick" && markerEndType === "arrowclosed") edgeSyntax = "==>";
+    else if (lineStyle === "thick" && markerEndType === "none") edgeSyntax = "===";
+    else if (lineStyle === "solid" && markerEndType === "circle") edgeSyntax = "--o";
+    else if (lineStyle === "solid" && markerEndType === "cross") edgeSyntax = "--x";
+    else if (lineStyle === "solid" && markerEndType === "none") edgeSyntax = "---";
+    else edgeSyntax = "-->";
+
     if (conn.label) {
-      lines.push(`    ${conn.source} -->|"${conn.label}"| ${conn.target}`);
+      lines.push(`    ${conn.source} ${edgeSyntax}|"${conn.label}"| ${conn.target}`);
     } else {
-      lines.push(`    ${conn.source} --> ${conn.target}`);
+      lines.push(`    ${conn.source} ${edgeSyntax} ${conn.target}`);
     }
   }
 

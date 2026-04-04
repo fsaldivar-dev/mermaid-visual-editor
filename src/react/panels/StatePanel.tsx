@@ -30,7 +30,6 @@ export function StateNodePanel({ node, onLabelChange }: NodePanelProps) {
         <input
           value={(node.data?.label as string) || ""}
           onChange={(e) => onLabelChange(node.id, e.target.value)}
-          autoFocus
         />
       </label>
     </>
@@ -47,7 +46,6 @@ export function StateEdgePanel({ edge, onLabelChange }: EdgePanelProps) {
           value={(edge.label as string) || ""}
           onChange={(e) => onLabelChange(edge.id, e.target.value)}
           placeholder="Event name"
-          autoFocus
         />
       </label>
     </>

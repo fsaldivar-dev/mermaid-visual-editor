@@ -26,7 +26,6 @@ export function ClassNodePanel({ node, onLabelChange }: NodePanelProps) {
             const newLabel = [e.target.value, ...members].join("\n");
             onLabelChange(node.id, newLabel);
           }}
-          autoFocus
         />
         {!className.trim() && <ValidationMessage message="Class name is required" />}
       </label>

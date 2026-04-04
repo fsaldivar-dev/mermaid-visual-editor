@@ -31,7 +31,6 @@ export function C4NodePanel({ node, onLabelChange, onPropertyChange }: NodePanel
         <input
           value={label}
           onChange={(e) => onLabelChange(node.id, e.target.value)}
-          autoFocus
         />
         {!label.trim() && <ValidationMessage message="Name is required" />}
       </label>

@@ -32,7 +32,6 @@ export function SequenceNodePanel({ node, allNodes, onLabelChange, onPropertyCha
           <input
             value={(node.data?.label as string) || ""}
             onChange={(e) => onLabelChange(node.id, e.target.value)}
-            autoFocus
           />
           {!((node.data?.label as string) || "").trim() && <ValidationMessage message="Message text is required" />}
         </label>
@@ -88,7 +87,6 @@ export function SequenceNodePanel({ node, allNodes, onLabelChange, onPropertyCha
           <input
             value={(node.data?.label as string) || ""}
             onChange={(e) => onLabelChange(node.id, e.target.value)}
-            autoFocus
           />
         </label>
       </>

@@ -24,7 +24,6 @@ export function JourneyNodePanel({ node, allNodes, onLabelChange, onPropertyChan
         <input
           value={rawLabel}
           onChange={(e) => updateLabel(e.target.value, score)}
-          autoFocus
         />
       </label>
       <label>

@@ -3,6 +3,14 @@ import { RectNode } from "./RectNode";
 import { RoundedNode } from "./RoundedNode";
 import { DiamondNode } from "./DiamondNode";
 import { CircleNode } from "./CircleNode";
+import { StadiumNode } from "./StadiumNode";
+import { SubroutineNode } from "./SubroutineNode";
+import { CylinderNode } from "./CylinderNode";
+import { HexagonNode } from "./HexagonNode";
+import { ParallelogramNode } from "./ParallelogramNode";
+import { TrapezoidNode } from "./TrapezoidNode";
+import { AsymmetricNode } from "./AsymmetricNode";
+import { DoubleCircleNode } from "./DoubleCircleNode";
 import { ClassNode } from "./ClassNode";
 import { EntityNode } from "./EntityNode";
 import { StateNode } from "./StateNode";
@@ -21,6 +29,14 @@ export const baseNodeTypes = {
   rounded: RoundedNode,
   diamond: DiamondNode,
   circle: CircleNode,
+  stadium: StadiumNode,
+  subroutine: SubroutineNode,
+  cylinder: CylinderNode,
+  hexagon: HexagonNode,
+  parallelogram: ParallelogramNode,
+  trapezoid: TrapezoidNode,
+  asymmetric: AsymmetricNode,
+  doubleCircle: DoubleCircleNode,
   default: RectNode,
 };
 
@@ -94,6 +110,14 @@ export {
   RoundedNode,
   DiamondNode,
   CircleNode,
+  StadiumNode,
+  SubroutineNode,
+  CylinderNode,
+  HexagonNode,
+  ParallelogramNode,
+  TrapezoidNode,
+  AsymmetricNode,
+  DoubleCircleNode,
   ClassNode,
   EntityNode,
   StateNode,

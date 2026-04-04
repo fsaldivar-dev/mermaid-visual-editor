@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import {
   BaseEdge,
   EdgeLabelRenderer,
@@ -7,6 +6,17 @@ import {
   getBezierPath,
   type EdgeProps,
 } from "@xyflow/react";
+
+function resolveMarker(markerType: string | undefined, fallback: string | undefined): string | undefined {
+  switch (markerType) {
+    case "arrow": return "url(#mve-marker-arrow)";
+    case "arrowclosed": return "url(#mve-marker-arrowclosed)";
+    case "circle": return "url(#mve-marker-circle)";
+    case "cross": return "url(#mve-marker-cross)";
+    case "none": return undefined;
+    default: return fallback;
+  }
+}
 
 export function EditableEdge({
   id,
@@ -27,6 +37,9 @@ export function EditableEdge({
   const strokeColor = (data?.strokeColor as string) || undefined;
   const strokeWidth = (data?.strokeWidth as number) || 2;
   const animated = (data?.animated as boolean) || false;
+  const lineStyle = (data?.lineStyle as string) || "solid";
+  const markerEndType = data?.markerEndType as string | undefined;
+  const markerStartType = data?.markerStartType as string | undefined;
 
   // Compute path based on edge style
   let edgePath: string;
@@ -66,12 +79,26 @@ export function EditableEdge({
     }
   }
 
+  // Compute effective stroke width and dash based on lineStyle
+  let effectiveStrokeWidth = strokeWidth;
+  let strokeDasharray: string | undefined;
+  if (lineStyle === "dotted") {
+    strokeDasharray = "5 3";
+  } else if (lineStyle === "thick") {
+    effectiveStrokeWidth = strokeWidth * 2.5;
+  }
+
   const computedStyle = {
     ...style,
-    strokeWidth,
+    strokeWidth: effectiveStrokeWidth,
     ...(strokeColor ? { stroke: strokeColor } : {}),
+    ...(strokeDasharray ? { strokeDasharray } : {}),
     ...(animated ? { strokeDasharray: "5 5", animation: "mve-dash 0.5s linear infinite" } : {}),
   };
+
+  // Resolve custom markers
+  const resolvedMarkerEnd = resolveMarker(markerEndType, markerEnd as string | undefined);
+  const resolvedMarkerStart = resolveMarker(markerStartType, markerStart as string | undefined);
 
   return (
     <>
@@ -79,8 +106,8 @@ export function EditableEdge({
         id={id}
         path={edgePath}
         style={computedStyle}
-        markerEnd={markerEnd}
-        markerStart={markerStart}
+        markerEnd={resolvedMarkerEnd}
+        markerStart={resolvedMarkerStart}
         interactionWidth={20}
       />
       {label && (

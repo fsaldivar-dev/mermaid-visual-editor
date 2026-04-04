@@ -23,7 +23,6 @@ export function GanttNodePanel({ node, allNodes, onLabelChange, onPropertyChange
             const newLabel = section ? `${section} / ${e.target.value}` : e.target.value;
             onLabelChange(node.id, newLabel);
           }}
-          autoFocus
         />
       </label>
       <label>

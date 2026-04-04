@@ -14,7 +14,6 @@ export function MindmapNodePanel({ node, allNodes, allEdges, onLabelChange }: No
         <input
           value={(node.data?.label as string) || ""}
           onChange={(e) => onLabelChange(node.id, e.target.value)}
-          autoFocus
         />
       </label>
       {parentNode && (
