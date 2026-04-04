@@ -45,4 +45,26 @@ describe("roundtrip: model → ReactFlow → model", () => {
     expect(restored.elements).toHaveLength(original.elements.length);
     expect(restored.connections).toHaveLength(original.connections.length);
   });
+
+  it("ER diagram labels do not accumulate on multiple roundtrips", () => {
+    const original = parse('erDiagram\n    USER ||--o{ ORDER : places');
+
+    // First roundtrip
+    const rf1 = toReactFlow(original);
+    const model1 = fromReactFlow(rf1.nodes, rf1.edges, "er", "LR");
+
+    // Second roundtrip
+    const rf2 = toReactFlow(model1);
+    const model2 = fromReactFlow(rf2.nodes, rf2.edges, "er", "LR");
+
+    // Third roundtrip
+    const rf3 = toReactFlow(model2);
+
+    // Edge label should NOT grow with each roundtrip
+    const label1 = rf1.edges[0]?.label as string | undefined;
+    const label3 = rf3.edges[0]?.label as string | undefined;
+    expect(label3).toBe(label1);
+    // Label should be just the relationship verb, not accumulated cardinality
+    expect((label3 || "").length).toBeLessThan(30);
+  });
 });

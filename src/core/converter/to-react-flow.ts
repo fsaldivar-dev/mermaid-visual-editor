@@ -58,11 +58,12 @@ export function toReactFlow(model: DiagramModel): ReactFlowData {
 
     // For ER diagrams, use the cardinality string as the edge label
     // and suppress default arrow markers
+    let edgeLabel = conn.label;
     if (isER) {
       const cardinality = conn.properties.cardinality as string | undefined;
-      if (cardinality) {
-        conn = { ...conn, label: conn.label ? `${conn.label} [${cardinality}]` : cardinality };
-      }
+      // Show only the relationship verb as label (not the cardinality notation)
+      // Cardinality is already conveyed visually; avoid label accumulation on roundtrips
+      edgeLabel = conn.label || undefined;
       // ER relationships don't use arrow markers
       markerEndType = "none";
       markerStartType = undefined;
@@ -122,7 +123,7 @@ export function toReactFlow(model: DiagramModel): ReactFlowData {
       target: conn.target,
       sourceHandle: (conn.properties.sourceHandle as string) || undefined,
       targetHandle: (conn.properties.targetHandle as string) || undefined,
-      label: conn.label,
+      label: isER ? edgeLabel : conn.label,
       type: "editable",
       ...(markerEnd ? { markerEnd } : {}),
       ...(markerStart ? { markerStart } : {}),
