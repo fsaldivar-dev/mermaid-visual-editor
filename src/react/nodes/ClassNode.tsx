@@ -1,4 +1,4 @@
-import { Handle, Position } from "@xyflow/react";
+import { Handle, Position, NodeResizer } from "@xyflow/react";
 
 interface ClassNodeProps {
   data: { label?: string; attributes?: string[]; methods?: string[] };
@@ -7,7 +7,6 @@ interface ClassNodeProps {
 
 export function ClassNode({ data, selected }: ClassNodeProps) {
   const label = data?.label || "";
-  // Parse label: first line is class name, rest are members
   const lines = label.split("\n");
   const className = lines[0] || "";
   const members = lines.slice(1);
@@ -17,7 +16,11 @@ export function ClassNode({ data, selected }: ClassNodeProps) {
 
   return (
     <div className={`mve-node mve-class-node ${selected ? "mve-selected" : ""}`}>
-      <Handle type="target" position={Position.Top} />
+      <NodeResizer isVisible={!!selected} minWidth={80} minHeight={40} handleClassName="mve-resize-handle" lineClassName="mve-resize-line" />
+      <Handle type="source" position={Position.Top} id="top" className="mve-handle" />
+      <Handle type="source" position={Position.Bottom} id="bottom" className="mve-handle" />
+      <Handle type="source" position={Position.Left} id="left" className="mve-handle" />
+      <Handle type="source" position={Position.Right} id="right" className="mve-handle" />
       <div className="mve-class-header">{className}</div>
       {attributes.length > 0 && (
         <div className="mve-class-section">
@@ -33,7 +36,6 @@ export function ClassNode({ data, selected }: ClassNodeProps) {
           ))}
         </div>
       )}
-      <Handle type="source" position={Position.Bottom} />
     </div>
   );
 }

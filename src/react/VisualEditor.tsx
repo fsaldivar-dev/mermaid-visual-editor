@@ -32,6 +32,7 @@ import { useAlignmentGuides } from "./hooks/useAlignmentGuides";
 import { SearchOverlay } from "./components/SearchOverlay";
 import { AlignmentGuides } from "./components/AlignmentGuides";
 import { edgeTypes } from "./edges";
+import { useSmartEdges } from "./hooks/useSmartEdges";
 
 const defaultEdgeOptions = {
   type: "editable" as const,
@@ -91,15 +92,17 @@ function VisualEditorInner({
   const { exportToPng, exportToSvg } = useExport();
   const searchState = useSearch(nodes);
   const { guides, computeGuides, clearGuides } = useAlignmentGuides();
+  const { recalculate: recalculateSmartEdges, computeAll: computeAllSmartEdges } = useSmartEdges();
 
-  // Sync from external model changes — clear selection when model changes
+  // Sync from external model changes — clear selection and compute smart edges
   useEffect(() => {
     const { nodes: newNodes, edges: newEdges } = toReactFlow(model);
+    const smartEdges = computeAllSmartEdges(newNodes, newEdges);
     setNodes(newNodes);
-    setEdges(newEdges);
+    setEdges(smartEdges);
     setSelectedNode(null);
     setSelectedEdge(null);
-  }, [model, setNodes, setEdges]);
+  }, [model, setNodes, setEdges, computeAllSmartEdges]);
 
   // Emit model changes back
   const emitChange = useCallback(
@@ -203,12 +206,14 @@ function VisualEditorInner({
         return;
       }
 
-      // Default: add edge
+      // Default: add edge with smart handle routing
       setEdges((eds) => {
-        const updated = addEdge(
+        const newEdge = addEdge(
           { ...connection, ...defaultEdgeOptions },
           eds
         );
+        // Recalculate handles for the new edge based on node positions
+        const updated = computeAllSmartEdges(nodes, newEdge);
         setTimeout(() => emitChange(nodes, updated), 0);
         return updated;
       });
@@ -448,10 +453,19 @@ function VisualEditorInner({
     [computeGuides, nodes]
   );
 
-  // When a message node is dragged, snap to nearest participant pair
+  // When a node is dragged, recalculate smart edges and handle sequence snapping
   const onNodeDragStop = useCallback(
     (_: unknown, node: Node) => {
       clearGuides();
+
+      // Recalculate smart edges for all edges connected to this node
+      setEdges((eds) => {
+        const updated = recalculateSmartEdges(node.id, nodes, eds);
+        if (updated !== eds) {
+          setTimeout(() => emitChange(nodes, updated), 0);
+        }
+        return updated;
+      });
 
       if (model.type !== "sequence" || !node.data?.isMessage) return;
 
@@ -508,7 +522,7 @@ function VisualEditorInner({
         return updated;
       });
     },
-    [model.type, setNodes, edges, emitChange, setSelectedNode, clearGuides]
+    [model.type, setNodes, setEdges, nodes, edges, emitChange, setSelectedNode, clearGuides, recalculateSmartEdges]
   );
 
   // Drag & Drop from sidebar
