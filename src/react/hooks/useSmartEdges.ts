@@ -68,7 +68,7 @@ function nodeHasNamedHandles(node: Node): boolean {
     "rect", "rounded", "circle", "diamond", "default",
     "stadium", "subroutine", "cylinder", "hexagon",
     "parallelogram", "trapezoid", "asymmetric", "doubleCircle",
-    "entity", "classNode", "state",
+    "entity", "classNode", "state", "actor", "forkJoin", "choice", "note",
     "mindmapNode", "timelineEvent", "pieSlice", "journeyStep", "gitCommit", "ganttTask",
   ]);
   // State terminals only have 1 handle

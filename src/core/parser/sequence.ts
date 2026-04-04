@@ -9,15 +9,18 @@ export function parseSequenceDiagram(text: string): DiagramModel {
   const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
   const participantOrder: string[] = [];
   const participantLabels = new Map<string, string>();
+  const actorIds = new Set<string>();
   const messages: { src: string; tgt: string; label: string; type: string }[] = [];
 
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i];
-    const part = line.match(/^(?:participant|actor)\s+(\w+)(?:\s+as\s+(.+))?$/i);
+    const part = line.match(/^(participant|actor)\s+(\w+)(?:\s+as\s+(.+))?$/i);
     if (part) {
-      const id = part[1];
+      const keyword = part[1].toLowerCase();
+      const id = part[2];
       if (!participantOrder.includes(id)) participantOrder.push(id);
-      if (part[2]) participantLabels.set(id, part[2]);
+      if (part[3]) participantLabels.set(id, part[3]);
+      if (keyword === "actor") actorIds.add(id);
       continue;
     }
     const msg = line.match(/^(\S+?)\s*(->>|-->>|->|-->)\+?\s*(\S+?)\s*:\s*(.+)$/);
@@ -36,13 +39,15 @@ export function parseSequenceDiagram(text: string): DiagramModel {
 
   participantOrder.forEach((id, i) => {
     participantIndexMap.set(id, i);
+    const isActor = actorIds.has(id);
     elements.push({
       id,
       label: participantLabels.get(id) || id,
-      shape: "participant",
+      shape: isActor ? "actor" : "participant",
       position: { x: i * PARTICIPANT_SPACING, y: 0 },
       properties: {
         isParticipant: true,
+        isActor,
         lifelineHeight,
         participantIndex: i,
       },

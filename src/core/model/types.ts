@@ -32,6 +32,7 @@ export type NodeShape =
   | "doubleCircle"
   // Specialized shapes for specific diagram types
   | "participant"
+  | "actor"
   | "message"
   | "state"
   | "entity"
@@ -42,6 +43,9 @@ export type NodeShape =
   | "mindmapNode"
   | "gitCommit"
   | "journeyStep"
+  | "forkJoin"
+  | "choice"
+  | "note"
   | "group";
 
 export interface DiagramElement {
