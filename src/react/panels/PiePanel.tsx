@@ -15,7 +15,6 @@ export function PieNodePanel({ node, onPropertyChange }: NodePanelProps) {
             onPropertyChange(node.id, "rawLabel", e.target.value);
             onPropertyChange(node.id, "label", `${e.target.value} (${value})`);
           }}
-          autoFocus
         />
       </label>
       <label>

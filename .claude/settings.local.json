@@ -6,7 +6,8 @@
       "Bash(export PATH=/opt/homebrew/bin:$PATH)",
       "mcp__Claude_Preview__preview_start",
       "Bash(curl -s http://localhost:5175/src/react/EditorToolbar.tsx)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "WebSearch"
     ]
   }
 }

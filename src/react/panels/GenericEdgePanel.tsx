@@ -6,10 +6,18 @@ const EDGE_STYLES = [
   { value: "bezier", label: "Bezier Curve" },
 ];
 
+const LINE_STYLES = [
+  { value: "solid", label: "Solid" },
+  { value: "dotted", label: "Dotted" },
+  { value: "thick", label: "Thick" },
+];
+
 const MARKER_STYLES = [
-  { value: "none", label: "None" },
-  { value: "arrow", label: "Arrow" },
   { value: "arrowclosed", label: "Closed Arrow" },
+  { value: "arrow", label: "Arrow" },
+  { value: "circle", label: "Circle" },
+  { value: "cross", label: "Cross" },
+  { value: "none", label: "None" },
 ];
 
 export function GenericEdgePanel({ edge, onLabelChange, onPropertyChange }: EdgePanelProps) {
@@ -17,6 +25,9 @@ export function GenericEdgePanel({ edge, onLabelChange, onPropertyChange }: Edge
   const strokeWidth = (edge.data?.strokeWidth as number) || 2;
   const strokeColor = (edge.data?.strokeColor as string) || "";
   const animated = (edge.data?.animated as boolean) || false;
+  const lineStyle = (edge.data?.lineStyle as string) || "solid";
+  const markerEndType = (edge.data?.markerEndType as string) || "arrowclosed";
+  const markerStartType = (edge.data?.markerStartType as string) || "none";
 
   return (
     <>
@@ -27,7 +38,6 @@ export function GenericEdgePanel({ edge, onLabelChange, onPropertyChange }: Edge
           value={(edge.label as string) || ""}
           onChange={(e) => onLabelChange(edge.id, e.target.value)}
           placeholder="Edge label"
-          autoFocus
         />
       </label>
       <label>
@@ -60,6 +70,39 @@ export function GenericEdgePanel({ edge, onLabelChange, onPropertyChange }: Edge
           onChange={(e) => onPropertyChange(edge.id, "strokeColor", e.target.value)}
           style={{ width: 40, height: 24, padding: 0, border: "none", cursor: "pointer" }}
         />
+      </label>
+      <label>
+        <span>Line Style</span>
+        <select
+          value={lineStyle}
+          onChange={(e) => onPropertyChange(edge.id, "lineStyle", e.target.value)}
+        >
+          {LINE_STYLES.map((s) => (
+            <option key={s.value} value={s.value}>{s.label}</option>
+          ))}
+        </select>
+      </label>
+      <label>
+        <span>End Marker</span>
+        <select
+          value={markerEndType}
+          onChange={(e) => onPropertyChange(edge.id, "markerEndType", e.target.value)}
+        >
+          {MARKER_STYLES.map((s) => (
+            <option key={s.value} value={s.value}>{s.label}</option>
+          ))}
+        </select>
+      </label>
+      <label>
+        <span>Start Marker</span>
+        <select
+          value={markerStartType}
+          onChange={(e) => onPropertyChange(edge.id, "markerStartType", e.target.value)}
+        >
+          {MARKER_STYLES.map((s) => (
+            <option key={s.value} value={s.value}>{s.label}</option>
+          ))}
+        </select>
       </label>
       <label style={{ flexDirection: "row", gap: 6, alignItems: "center" }}>
         <input

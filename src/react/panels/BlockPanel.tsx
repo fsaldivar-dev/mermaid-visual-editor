@@ -12,7 +12,6 @@ export function BlockNodePanel({ node, onLabelChange }: NodePanelProps) {
         <input
           value={label}
           onChange={(e) => onLabelChange(node.id, e.target.value)}
-          autoFocus
         />
         {!label.trim() && <ValidationMessage message="Label is required" />}
       </label>

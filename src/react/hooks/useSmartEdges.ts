@@ -66,6 +66,8 @@ export function computeOptimalHandles(
 function nodeHasNamedHandles(node: Node): boolean {
   const namedHandleTypes = new Set([
     "rect", "rounded", "circle", "diamond", "default",
+    "stadium", "subroutine", "cylinder", "hexagon",
+    "parallelogram", "trapezoid", "asymmetric", "doubleCircle",
     "entity", "classNode", "state",
     "mindmapNode", "timelineEvent", "pieSlice", "journeyStep", "gitCommit", "ganttTask",
   ]);

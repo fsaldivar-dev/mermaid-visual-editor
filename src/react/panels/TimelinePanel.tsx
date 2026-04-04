@@ -15,7 +15,6 @@ export function TimelineNodePanel({ node, onPropertyChange }: NodePanelProps) {
             onPropertyChange(node.id, "period", e.target.value);
             onPropertyChange(node.id, "label", `${e.target.value}\n${events.join(", ")}`);
           }}
-          autoFocus
         />
       </label>
       <label>

@@ -31,7 +31,7 @@ import { useSearch } from "./hooks/useSearch";
 import { useAlignmentGuides } from "./hooks/useAlignmentGuides";
 import { SearchOverlay } from "./components/SearchOverlay";
 import { AlignmentGuides } from "./components/AlignmentGuides";
-import { edgeTypes } from "./edges";
+import { edgeTypes, EdgeMarkers } from "./edges";
 import { useSmartEdges } from "./hooks/useSmartEdges";
 
 const defaultEdgeOptions = {
@@ -82,6 +82,7 @@ function VisualEditorInner({
   const [edges, setEdges, onEdgesChange] = useEdgesState(initial.edges);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
+  const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
   // Get node types for current diagram type
@@ -407,7 +408,7 @@ function VisualEditorInner({
         return;
       }
       if (mod && e.key === "f") { e.preventDefault(); searchState.open(); return; }
-      if (mod && e.key === "d" && !isInput) {
+      if (mod && e.key === "d" && e.shiftKey && !isInput) {
         e.preventDefault();
         copy(nodes, edges);
         const pasted = paste();
@@ -443,7 +444,13 @@ function VisualEditorInner({
   const onPaneClick = useCallback(() => {
     setSelectedNode(null);
     setSelectedEdge(null);
+    setEditingNodeId(null);
   }, []);
+
+  const onNodeDoubleClick = useCallback((_: unknown, node: Node) => {
+    if (readOnly) return;
+    setEditingNodeId(node.id);
+  }, [readOnly]);
 
   // Alignment guides during drag
   const onNodeDrag = useCallback(
@@ -567,13 +574,14 @@ function VisualEditorInner({
         onNodeDragStop={onNodeDragStop}
         onEdgeClick={onEdgeClick}
         onPaneClick={onPaneClick}
+        onNodeDoubleClick={readOnly ? undefined : onNodeDoubleClick}
         onDrop={onDrop}
         onDragOver={onDragOver}
         defaultEdgeOptions={defaultEdgeOptions}
         nodeTypes={currentNodeTypes}
         edgeTypes={edgeTypes}
         fitView
-        fitViewOptions={{ padding: 0.2 }}
+        fitViewOptions={{ padding: 0.3 }}
         colorMode={theme === "dark" ? "dark" : "light"}
         selectionOnDrag
         selectionMode={SelectionMode.Partial}
@@ -583,6 +591,7 @@ function VisualEditorInner({
         snapToGrid
         snapGrid={[20, 20]}
       >
+        <EdgeMarkers />
         <Background gap={20} size={1} />
         <Controls />
         {minimap && (
@@ -594,6 +603,68 @@ function VisualEditorInner({
           </Panel>
         )}
       </ReactFlow>
+
+      {editingNodeId && (() => {
+        const editNode = reactFlowInstance.getNode(editingNodeId);
+        if (!editNode) return null;
+        const nodeWidth = editNode.measured?.width ?? editNode.width ?? 150;
+        const nodeHeight = editNode.measured?.height ?? editNode.height ?? 40;
+        const screenPos = reactFlowInstance.flowToScreenPosition({
+          x: editNode.position.x,
+          y: editNode.position.y,
+        });
+        const wrapperRect = reactFlowWrapper.current?.getBoundingClientRect();
+        const left = screenPos.x - (wrapperRect?.left ?? 0);
+        const top = screenPos.y - (wrapperRect?.top ?? 0);
+        const zoom = reactFlowInstance.getZoom();
+        return (
+          <input
+            autoFocus
+            defaultValue={String(editNode.data?.label ?? "")}
+            style={{
+              position: "absolute",
+              left: left,
+              top: top,
+              width: Math.max(nodeWidth * zoom, 80),
+              height: nodeHeight * zoom,
+              zIndex: 1000,
+              border: "2px solid #3b82f6",
+              borderRadius: 4,
+              padding: "2px 6px",
+              fontSize: 14 * zoom,
+              background: theme === "dark" ? "#1e1e1e" : "#fff",
+              color: theme === "dark" ? "#fff" : "#000",
+              boxSizing: "border-box",
+              outline: "none",
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                const value = (e.target as HTMLInputElement).value;
+                updateNodeLabel(editingNodeId, value);
+                setSelectedNode((prev) =>
+                  prev && prev.id === editingNodeId
+                    ? { ...prev, data: { ...prev.data, label: value } }
+                    : prev
+                );
+                setEditingNodeId(null);
+              } else if (e.key === "Escape") {
+                setEditingNodeId(null);
+              }
+              e.stopPropagation();
+            }}
+            onBlur={(e) => {
+              const value = e.target.value;
+              updateNodeLabel(editingNodeId, value);
+              setSelectedNode((prev) =>
+                prev && prev.id === editingNodeId
+                  ? { ...prev, data: { ...prev.data, label: value } }
+                  : prev
+              );
+              setEditingNodeId(null);
+            }}
+          />
+        );
+      })()}
 
       <SearchOverlay
         isOpen={searchState.isOpen}

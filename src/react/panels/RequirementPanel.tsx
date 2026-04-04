@@ -26,7 +26,6 @@ export function RequirementNodePanel({ node, onLabelChange, onPropertyChange }: 
           <input
             value={label}
             onChange={(e) => onLabelChange(node.id, e.target.value)}
-            autoFocus
           />
           {!label.trim() && <ValidationMessage message="Name is required" />}
         </label>
@@ -61,7 +60,6 @@ export function RequirementNodePanel({ node, onLabelChange, onPropertyChange }: 
         <input
           value={label}
           onChange={(e) => onLabelChange(node.id, e.target.value)}
-          autoFocus
         />
         {!label.trim() && <ValidationMessage message="Name is required" />}
       </label>

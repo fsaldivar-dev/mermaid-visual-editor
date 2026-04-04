@@ -19,7 +19,6 @@ export function GenericNodePanel({ node, onLabelChange, onTypeChange }: NodePane
         <input
           value={label}
           onChange={(e) => onLabelChange(node.id, e.target.value)}
-          autoFocus
         />
         {!label.trim() && <ValidationMessage message="Label cannot be empty" />}
       </label>

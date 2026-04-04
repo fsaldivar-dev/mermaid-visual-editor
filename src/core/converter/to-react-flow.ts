@@ -48,18 +48,35 @@ export function toReactFlow(model: DiagramModel): ReactFlowData {
     return 0;
   });
 
-  const edges: Edge[] = model.connections.map((conn) => ({
-    id: conn.id,
-    source: conn.source,
-    target: conn.target,
-    sourceHandle: (conn.properties.sourceHandle as string) || undefined,
-    targetHandle: (conn.properties.targetHandle as string) || undefined,
-    label: conn.label,
-    type: "editable",
-    markerEnd: { type: "arrowclosed" as const },
-    style: { strokeWidth: 2 },
-    data: { ...conn.properties },
-  }));
+  const edges: Edge[] = model.connections.map((conn) => {
+    const markerEndType = (conn.properties.markerEndType as string) || "arrowclosed";
+    const markerStartType = (conn.properties.markerStartType as string) || undefined;
+
+    // Build markerEnd/markerStart based on custom types
+    // These are used as defaults; EditableEdge resolves custom markers from data
+    let markerEnd: Edge["markerEnd"] = undefined;
+    if (markerEndType === "arrowclosed" || !markerEndType) {
+      markerEnd = { type: "arrowclosed" as const };
+    }
+    let markerStart: Edge["markerStart"] = undefined;
+    if (markerStartType === "arrowclosed") {
+      markerStart = { type: "arrowclosed" as const };
+    }
+
+    return {
+      id: conn.id,
+      source: conn.source,
+      target: conn.target,
+      sourceHandle: (conn.properties.sourceHandle as string) || undefined,
+      targetHandle: (conn.properties.targetHandle as string) || undefined,
+      label: conn.label,
+      type: "editable",
+      ...(markerEnd ? { markerEnd } : {}),
+      ...(markerStart ? { markerStart } : {}),
+      style: { strokeWidth: 2 },
+      data: { ...conn.properties },
+    };
+  });
 
   return { nodes, edges };
 }

@@ -7,7 +7,34 @@ import type {
   SubgraphDef,
 } from "../model/types";
 
+// Edge patterns ordered from most specific to least specific
+// Each entry: regex suffix (after source node), lineStyle, markerEndType
+const EDGE_DEFS: { syntax: string; lineStyle: string; markerEndType: string }[] = [
+  { syntax: "-.->", lineStyle: "dotted", markerEndType: "arrowclosed" },
+  { syntax: "-.-",  lineStyle: "dotted", markerEndType: "none" },
+  { syntax: "==>",  lineStyle: "thick",  markerEndType: "arrowclosed" },
+  { syntax: "===",  lineStyle: "thick",  markerEndType: "none" },
+  { syntax: "--o",  lineStyle: "solid",  markerEndType: "circle" },
+  { syntax: "--x",  lineStyle: "solid",  markerEndType: "cross" },
+  { syntax: "-->",  lineStyle: "solid",  markerEndType: "arrowclosed" },
+  { syntax: "---",  lineStyle: "solid",  markerEndType: "none" },
+];
+
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 const NODE_PATTERNS: { regex: RegExp; shape: NodeShape }[] = [
+  // More specific patterns must come first
+  { regex: /^(\w+)\(\(\("([^"]*?)"\)\)\)/, shape: "doubleCircle" },
+  { regex: /^(\w+)\(\["([^"]*?)"\]\)/, shape: "stadium" },
+  { regex: /^(\w+)\[\["([^"]*?)"\]\]/, shape: "subroutine" },
+  { regex: /^(\w+)\[\("([^"]*?)"\)\]/, shape: "cylinder" },
+  { regex: /^(\w+)\{\{"([^"]*?)"\}\}/, shape: "hexagon" },
+  { regex: /^(\w+)\[\/"([^"]*?)"\/\]/, shape: "parallelogram" },
+  { regex: /^(\w+)\[\/"([^"]*?)"\\\]/, shape: "trapezoid" },
+  { regex: /^(\w+)>"([^"]*?)"\]/, shape: "asymmetric" },
+  // Original patterns
   { regex: /^(\w+)\(\("([^"]*?)"\)\)/, shape: "circle" },
   { regex: /^(\w+)\(\(([^)]*?)\)\)/, shape: "circle" },
   { regex: /^(\w+)\{"([^"]*?)"\}/, shape: "diamond" },
@@ -129,63 +156,84 @@ export function parseFlowchart(text: string): DiagramModel {
       continue;
     }
 
-    // Edge with label: A -->|"label"| B or A -->|label| B
-    const edgeLabelMatch = line.match(
-      /^(\w+)(?:\[.*?\]|\(.*?\)|\{.*?\})?\s*-->\|"?([^"|]*?)"?\|\s*(.+)$/
-    );
-    if (edgeLabelMatch) {
-      const sourceId = edgeLabelMatch[1];
-      const label = edgeLabelMatch[2];
-      const targetSegment = edgeLabelMatch[3];
+    // Try each edge pattern (labeled and unlabeled)
+    let edgeParsed = false;
+    for (const edgeDef of EDGE_DEFS) {
+      const escaped = escapeRegex(edgeDef.syntax);
 
-      const fullSrc = line.match(/^(\w+(?:\[.*?\]|\(.*?\)|\{.*?\})?)\s*-->/);
-      if (fullSrc) {
-        const s = parseNodeSegment(fullSrc[1]);
-        if (s) ensureNode(s.id, s.label, s.shape);
-      }
-
-      const targetNode = parseNodeSegment(targetSegment);
-      if (targetNode) {
-        ensureNode(sourceId);
-        ensureNode(targetNode.id, targetNode.label, targetNode.shape);
-        connections.push({
-          id: `e${connections.length}`,
-          source: sourceId,
-          target: targetNode.id,
-          label,
-          properties: {},
-        });
-      }
-      continue;
-    }
-
-    // Simple edge: A --> B[text] or A --> B
-    const edgeMatch = line.match(
-      /^(\w+)(?:\[.*?\]|\(.*?\)|\{.*?\})?\s*-->\s*(.+)$/
-    );
-    if (edgeMatch) {
-      const fullSource = line.match(
-        /^(\w+(?:\[.*?\]|\(.*?\)|\{.*?\})?)\s*-->/
+      // Edge with label: A <syntax>|"label"| B or A <syntax>|label| B
+      const labelRegex = new RegExp(
+        `^(\\w+)(?:\\[.*?\\]|\\(.*?\\)|\\{.*?\\})?\\s*${escaped}\\|"?([^"|]*?)"?\\|\\s*(.+)$`
       );
-      if (fullSource) {
-        const srcNode = parseNodeSegment(fullSource[1]);
-        if (srcNode) ensureNode(srcNode.id, srcNode.label, srcNode.shape);
+      const edgeLabelMatch = line.match(labelRegex);
+      if (edgeLabelMatch) {
+        const sourceId = edgeLabelMatch[1];
+        const label = edgeLabelMatch[2];
+        const targetSegment = edgeLabelMatch[3];
+
+        const fullSrcRegex = new RegExp(
+          `^(\\w+(?:\\[.*?\\]|\\(.*?\\)|\\{.*?\\})?)\\s*${escaped}`
+        );
+        const fullSrc = line.match(fullSrcRegex);
+        if (fullSrc) {
+          const s = parseNodeSegment(fullSrc[1]);
+          if (s) ensureNode(s.id, s.label, s.shape);
+        }
+
+        const targetNode = parseNodeSegment(targetSegment);
+        if (targetNode) {
+          ensureNode(sourceId);
+          ensureNode(targetNode.id, targetNode.label, targetNode.shape);
+          connections.push({
+            id: `e${connections.length}`,
+            source: sourceId,
+            target: targetNode.id,
+            label,
+            properties: {
+              lineStyle: edgeDef.lineStyle,
+              markerEndType: edgeDef.markerEndType,
+            },
+          });
+        }
+        edgeParsed = true;
+        break;
       }
-      const sourceId = edgeMatch[1];
-      const targetSegment = edgeMatch[2].trim();
-      const targetNode = parseNodeSegment(targetSegment);
-      if (targetNode) {
-        ensureNode(sourceId);
-        ensureNode(targetNode.id, targetNode.label, targetNode.shape);
-        connections.push({
-          id: `e${connections.length}`,
-          source: sourceId,
-          target: targetNode.id,
-          properties: {},
-        });
+
+      // Simple edge: A <syntax> B
+      const simpleRegex = new RegExp(
+        `^(\\w+)(?:\\[.*?\\]|\\(.*?\\)|\\{.*?\\})?\\s*${escaped}\\s+(.+)$`
+      );
+      const edgeMatch = line.match(simpleRegex);
+      if (edgeMatch) {
+        const fullSourceRegex = new RegExp(
+          `^(\\w+(?:\\[.*?\\]|\\(.*?\\)|\\{.*?\\})?)\\s*${escaped}`
+        );
+        const fullSource = line.match(fullSourceRegex);
+        if (fullSource) {
+          const srcNode = parseNodeSegment(fullSource[1]);
+          if (srcNode) ensureNode(srcNode.id, srcNode.label, srcNode.shape);
+        }
+        const sourceId = edgeMatch[1];
+        const targetSegment = edgeMatch[2].trim();
+        const targetNode = parseNodeSegment(targetSegment);
+        if (targetNode) {
+          ensureNode(sourceId);
+          ensureNode(targetNode.id, targetNode.label, targetNode.shape);
+          connections.push({
+            id: `e${connections.length}`,
+            source: sourceId,
+            target: targetNode.id,
+            properties: {
+              lineStyle: edgeDef.lineStyle,
+              markerEndType: edgeDef.markerEndType,
+            },
+          });
+        }
+        edgeParsed = true;
+        break;
       }
-      continue;
     }
+    if (edgeParsed) continue;
 
     // Standalone node definition
     const node = parseNodeSegment(line);

@@ -18,7 +18,6 @@ export function ERNodePanel({ node, onLabelChange }: NodePanelProps) {
         <input
           value={(node.data?.label as string) || ""}
           onChange={(e) => onLabelChange(node.id, e.target.value)}
-          autoFocus
         />
       </label>
     </>

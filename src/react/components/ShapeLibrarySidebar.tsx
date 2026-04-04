@@ -23,6 +23,19 @@ const CATEGORIES_BY_TYPE: Record<string, ShapeCategory[]> = {
         { type: "circle", label: "Circle", icon: "\u25cb" },
       ],
     },
+    {
+      name: "Extended Shapes",
+      shapes: [
+        { type: "stadium", label: "Stadium", icon: "\u2b2d" },
+        { type: "subroutine", label: "Subroutine", icon: "\u229e" },
+        { type: "cylinder", label: "Cylinder", icon: "\u232d" },
+        { type: "hexagon", label: "Hexagon", icon: "\u2b21" },
+        { type: "parallelogram", label: "Parallel", icon: "\u25b1" },
+        { type: "trapezoid", label: "Trapezoid", icon: "\u23e2" },
+        { type: "asymmetric", label: "Flag", icon: "\u2691" },
+        { type: "doubleCircle", label: "Dbl Circle", icon: "\u25ce" },
+      ],
+    },
   ],
   state: [
     { name: "States", shapes: [{ type: "rounded", label: "State", icon: "\u25a2" }] },
