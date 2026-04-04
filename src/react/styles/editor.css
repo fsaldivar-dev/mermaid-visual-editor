@@ -1564,3 +1564,373 @@
 [data-theme="dark"] .mve-color-swatch {
   border-color: rgba(255, 255, 255, 0.15);
 }
+
+/* ── Journey Map ── */
+
+.mve-journey-section {
+  margin-bottom: 24px;
+}
+
+.mve-journey-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #666;
+  margin-bottom: 8px;
+  padding-left: 4px;
+  letter-spacing: 0.5px;
+}
+
+[data-theme="dark"] .mve-journey-section-title {
+  color: #999;
+}
+
+.mve-journey-cards {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mve-journey-card {
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px 16px;
+  min-width: 100px;
+  cursor: pointer;
+  transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.mve-journey-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.mve-journey-card.selected {
+  border-color: #ff9500;
+  box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .mve-journey-card {
+  background: #2c2c2e;
+  border-color: #3a3a3c;
+}
+
+.mve-journey-name {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.mve-journey-score {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mve-journey-bar-track {
+  flex: 1;
+  height: 6px;
+  background: #f0f0f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+[data-theme="dark"] .mve-journey-bar-track {
+  background: #3a3a3c;
+}
+
+.mve-journey-bar {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+
+.mve-journey-score-num {
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+}
+
+.mve-journey-arrow {
+  color: #ccc;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .mve-journey-arrow {
+  color: #555;
+}
+
+/* ── Timeline ── */
+
+.mve-timeline {
+  position: relative;
+  padding: 0 20px;
+  max-width: 600px;
+  width: 100%;
+}
+
+.mve-timeline-line {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, #3b82f6, #8b5cf6, #ec4899);
+  transform: translateX(-50%);
+}
+
+[data-theme="dark"] .mve-timeline-line {
+  background: linear-gradient(to bottom, #6cb4ff, #a78bfa, #f472b6);
+}
+
+.mve-timeline-entry {
+  display: flex;
+  align-items: center;
+  margin-bottom: 32px;
+  position: relative;
+}
+
+.mve-timeline-left {
+  flex-direction: row-reverse;
+}
+
+.mve-timeline-right {
+  flex-direction: row;
+}
+
+.mve-timeline-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="dark"] .mve-timeline-dot {
+  border-color: #1c1c1e;
+}
+
+.mve-timeline-card {
+  width: calc(50% - 30px);
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: box-shadow 0.2s, border-color 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.mve-timeline-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.mve-timeline-card.selected {
+  border-color: #ff9500;
+  box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.2);
+}
+
+[data-theme="dark"] .mve-timeline-card {
+  background: #2c2c2e;
+  border-color: #3a3a3c;
+}
+
+.mve-timeline-period {
+  font-size: 14px;
+  font-weight: 700;
+  color: #3b82f6;
+  margin-bottom: 4px;
+}
+
+[data-theme="dark"] .mve-timeline-period {
+  color: #6cb4ff;
+}
+
+.mve-timeline-events {
+  font-size: 13px;
+  color: #666;
+}
+
+.mve-timeline-events div {
+  padding: 1px 0;
+}
+
+[data-theme="dark"] .mve-timeline-events {
+  color: #999;
+}
+
+/* ── Chart Views ── */
+
+/* Chart container */
+.mve-chart-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+  overflow: auto;
+  background: #fafafa;
+}
+[data-theme="dark"] .mve-chart-container {
+  background: #1c1c1e;
+}
+
+.mve-chart-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+/* Pie chart */
+.mve-pie-svg {
+  cursor: pointer;
+}
+.mve-pie-slice {
+  transition: transform 0.2s, opacity 0.2s;
+  transform-origin: center;
+}
+.mve-pie-slice:hover {
+  transform: scale(1.03);
+}
+.mve-pie-slice.selected {
+  transform: scale(1.06);
+  stroke: #ff9500;
+  stroke-width: 2;
+}
+.mve-pie-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+.mve-pie-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+.mve-pie-legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+/* Gantt chart */
+.mve-gantt {
+  width: 100%;
+  max-width: 900px;
+}
+.mve-gantt-header {
+  display: flex;
+  border-bottom: 1px solid #e5e5e5;
+  padding-bottom: 4px;
+  margin-bottom: 8px;
+}
+.mve-gantt-section {
+  margin-bottom: 12px;
+}
+.mve-gantt-section-title {
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #666;
+  margin-bottom: 4px;
+}
+.mve-gantt-row {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  margin-bottom: 4px;
+}
+.mve-gantt-label {
+  width: 140px;
+  font-size: 12px;
+  flex-shrink: 0;
+  padding-right: 8px;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mve-gantt-track {
+  flex: 1;
+  position: relative;
+  height: 24px;
+  background: #f0f0f0;
+  border-radius: 4px;
+}
+.mve-gantt-bar {
+  position: absolute;
+  height: 100%;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  min-width: 4px;
+}
+.mve-gantt-bar:hover {
+  opacity: 0.85;
+}
+.mve-gantt-bar.selected {
+  box-shadow: 0 0 0 2px #ff9500;
+}
+
+[data-theme="dark"] .mve-gantt-header {
+  border-bottom-color: #3a3a3c;
+}
+[data-theme="dark"] .mve-gantt-section-title {
+  color: #999;
+}
+[data-theme="dark"] .mve-gantt-track {
+  background: #2c2c2e;
+}
+
+/* Chart edit panel */
+.mve-chart-edit {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 16px;
+  min-width: 200px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+[data-theme="dark"] .mve-chart-edit {
+  background: #2c2c2e;
+  border-color: #3a3a3c;
+}
+.mve-chart-edit h4 {
+  margin: 0 0 12px;
+  font-size: 13px;
+  text-transform: uppercase;
+  color: #666;
+}
+.mve-chart-edit label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+.mve-chart-edit input {
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+}
+[data-theme="dark"] .mve-chart-edit input {
+  background: #1c1c1e;
+  border-color: #3a3a3c;
+  color: #f5f5f7;
+}

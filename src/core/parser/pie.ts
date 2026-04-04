@@ -3,6 +3,16 @@ import type { DiagramModel, DiagramElement } from "../model/types";
 export function parsePie(text: string): DiagramModel {
   const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
   const elements: DiagramElement[] = [];
+  let title = "";
+
+  // Extract title from "pie title X" or standalone "title X"
+  for (const line of lines) {
+    const m = line.match(/^pie\s+title\s+(.+)/i) || line.match(/^title\s+(.+)/i);
+    if (m) {
+      title = m[1].trim();
+      break;
+    }
+  }
 
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i];
@@ -33,6 +43,6 @@ export function parsePie(text: string): DiagramModel {
     direction: "TD",
     elements,
     connections: [],
-    metadata: {},
+    metadata: title ? { title } : {},
   };
 }
