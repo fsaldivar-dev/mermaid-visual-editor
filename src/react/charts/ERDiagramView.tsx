@@ -1,9 +1,10 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import type {
   DiagramModel,
   DiagramElement,
   DiagramConnection,
 } from "../../core/model/types";
+import { ChartEditorWrapper } from "./ChartEditorWrapper";
 
 interface ERAttribute {
   type: string;
@@ -318,6 +319,71 @@ export function ERDiagramView({
     [model, onModelChange]
   );
 
+  /* ---------- add / delete helpers ---------- */
+  const [entityCounter, setEntityCounter] = useState(model.elements.length + 1);
+  const [newRelSource, setNewRelSource] = useState("");
+  const [newRelTarget, setNewRelTarget] = useState("");
+  const [newRelLabel, setNewRelLabel] = useState("");
+  const [newRelCard, setNewRelCard] = useState("||--o{");
+
+  const addEntity = useCallback(() => {
+    const name = `NewEntity${entityCounter}`;
+    setEntityCounter((c) => c + 1);
+    const newEl: DiagramElement = {
+      id: name,
+      label: name,
+      shape: "box" as DiagramElement["shape"],
+      position: { x: 0, y: 0 },
+      properties: { attributes: [] },
+    };
+    onModelChange({
+      ...model,
+      elements: [...model.elements, newEl],
+    });
+  }, [model, onModelChange, entityCounter]);
+
+  const deleteEntity = useCallback(
+    (id: string) => {
+      onModelChange({
+        ...model,
+        elements: model.elements.filter((el) => el.id !== id),
+        connections: model.connections.filter(
+          (c) => c.source !== id && c.target !== id
+        ),
+      });
+      onSelect(null);
+    },
+    [model, onModelChange, onSelect]
+  );
+
+  const addRelationship = useCallback(() => {
+    if (!newRelSource || !newRelTarget) return;
+    const id = `rel_${newRelSource}_${newRelTarget}_${Date.now()}`;
+    const newConn: DiagramConnection = {
+      id,
+      source: newRelSource,
+      target: newRelTarget,
+      label: newRelLabel || undefined,
+      properties: { cardinality: newRelCard },
+    };
+    onModelChange({
+      ...model,
+      connections: [...model.connections, newConn],
+    });
+    setNewRelLabel("");
+  }, [model, onModelChange, newRelSource, newRelTarget, newRelLabel, newRelCard]);
+
+  const deleteRelationship = useCallback(
+    (id: string) => {
+      onModelChange({
+        ...model,
+        connections: model.connections.filter((c) => c.id !== id),
+      });
+      onSelect(null);
+    },
+    [model, onModelChange, onSelect]
+  );
+
   /* ---------- selected items ---------- */
   const selectedEntity = selectedId
     ? model.elements.find((el) => el.id === selectedId)
@@ -599,12 +665,21 @@ export function ERDiagramView({
               }}
             />
           </label>
-          <button
-            style={{ marginTop: 8, fontSize: 12, cursor: "pointer" }}
-            onClick={() => onSelect(null)}
-          >
-            Close
-          </button>
+          <div className="mve-btn-row">
+            <button
+              className="mve-chart-btn mve-chart-btn-danger"
+              onClick={() => deleteEntity(selectedEntity.id)}
+            >
+              Delete Entity
+            </button>
+            <button
+              className="mve-chart-btn"
+              style={{ background: "#e5e7eb", color: "#374151" }}
+              onClick={() => onSelect(null)}
+            >
+              Close
+            </button>
+          </div>
         </div>
       );
     }
@@ -645,12 +720,21 @@ export function ERDiagramView({
               ))}
             </select>
           </label>
-          <button
-            style={{ marginTop: 8, fontSize: 12, cursor: "pointer" }}
-            onClick={() => onSelect(null)}
-          >
-            Close
-          </button>
+          <div className="mve-btn-row">
+            <button
+              className="mve-chart-btn mve-chart-btn-danger"
+              onClick={() => deleteRelationship(selectedRelation.id)}
+            >
+              Delete Relationship
+            </button>
+            <button
+              className="mve-chart-btn"
+              style={{ background: "#e5e7eb", color: "#374151" }}
+              onClick={() => onSelect(null)}
+            >
+              Close
+            </button>
+          </div>
         </div>
       );
     }
@@ -662,7 +746,15 @@ export function ERDiagramView({
   /*  Main render                                                      */
   /* ---------------------------------------------------------------- */
   return (
-    <div className="mve-chart-container" style={{ position: "relative" }}>
+    <ChartEditorWrapper
+      selectedId={selectedId}
+      onSelect={onSelect}
+      onAdd={addEntity}
+      onDelete={deleteEntity}
+      addLabel="Add Entity"
+      elementName="entity"
+      theme={theme}
+    >
       <svg
         className="mve-er-diagram"
         viewBox={`0 0 ${svgWidth} ${svgHeight}`}
@@ -674,7 +766,75 @@ export function ERDiagramView({
         {/* Entities */}
         {model.elements.map(renderEntity)}
       </svg>
+
       {renderEditPanel()}
-    </div>
+
+      {/* Add Relationship form (shown when no entity/relation selected and >=2 entities) */}
+      {!selectedEntity && !selectedRelation && model.elements.length >= 2 && (
+        <div className="mve-chart-edit">
+          <h4>Add Relationship</h4>
+          <div className="mve-add-relationship-form">
+            <label>
+              Source
+              <select
+                value={newRelSource}
+                onChange={(e) => setNewRelSource(e.target.value)}
+              >
+                <option value="">-- Select --</option>
+                {model.elements.map((el) => (
+                  <option key={el.id} value={el.id}>
+                    {el.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Target
+              <select
+                value={newRelTarget}
+                onChange={(e) => setNewRelTarget(e.target.value)}
+              >
+                <option value="">-- Select --</option>
+                {model.elements.map((el) => (
+                  <option key={el.id} value={el.id}>
+                    {el.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Label
+              <input
+                type="text"
+                value={newRelLabel}
+                onChange={(e) => setNewRelLabel(e.target.value)}
+                placeholder="e.g. has, belongs to"
+              />
+            </label>
+            <label>
+              Cardinality
+              <select
+                value={newRelCard}
+                onChange={(e) => setNewRelCard(e.target.value)}
+              >
+                {CARDINALITY_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button
+              className="mve-chart-btn mve-chart-btn-primary"
+              onClick={addRelationship}
+              disabled={!newRelSource || !newRelTarget}
+              style={{ alignSelf: "flex-start", marginTop: 4 }}
+            >
+              + Add Relationship
+            </button>
+          </div>
+        </div>
+      )}
+    </ChartEditorWrapper>
   );
 }

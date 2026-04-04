@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from "react";
 import type { DiagramModel, DiagramElement } from "../../core/model/types";
+import { ChartEditorWrapper } from "./ChartEditorWrapper";
 
 interface GanttChartViewProps {
   model: DiagramModel;
@@ -68,6 +69,42 @@ export function GanttChartView({ model, onModelChange, theme: _theme = "light", 
     },
     [model, onModelChange]
   );
+
+  const addTask = useCallback(() => {
+    const existingIds = model.elements.map((el) => el.id);
+    let idx = model.elements.length;
+    while (existingIds.includes(`task${idx}`)) idx++;
+    const newId = `task${idx}`;
+    // Determine section from last element, if any
+    const lastEl = model.elements.length > 0 ? model.elements[model.elements.length - 1] : null;
+    const section = lastEl ? String(lastEl.properties.section || "") : "";
+    const taskLabel = "New Task";
+    const newElement: DiagramElement = {
+      id: newId,
+      label: section ? `${section} / ${taskLabel}` : taskLabel,
+      shape: "rect",
+      position: { x: 0, y: 0 },
+      properties: {
+        taskId: newId,
+        taskLabel,
+        section,
+        duration: "3d",
+        startDate: "",
+        afterTask: "",
+      },
+    };
+    onModelChange({ ...model, elements: [...model.elements, newElement] });
+    onSelect(newId);
+  }, [model, onModelChange, onSelect]);
+
+  const deleteTask = useCallback((id: string) => {
+    const newElements = model.elements.filter((el) => el.id !== id);
+    // Also remove connections referencing this task
+    const newConnections = (model.connections || []).filter(
+      (c) => c.source !== id && c.target !== id
+    );
+    onModelChange({ ...model, elements: newElements, connections: newConnections });
+  }, [model, onModelChange]);
 
   // Resolve tasks with computed dates
   const { tasks, rangeStart, totalDays } = useMemo(() => {
@@ -160,6 +197,15 @@ export function GanttChartView({ model, onModelChange, theme: _theme = "light", 
   const sectionColorMap = new Map<string, string>();
 
   return (
+    <ChartEditorWrapper
+      theme={_theme}
+      selectedId={selectedId}
+      onSelect={onSelect}
+      onAdd={addTask}
+      onDelete={deleteTask}
+      addLabel="Add Task"
+      elementName="task"
+    >
     <div className="mve-chart-container" style={{ position: "relative" }}>
       {title && <div className="mve-chart-title">{title}</div>}
 
@@ -294,5 +340,6 @@ export function GanttChartView({ model, onModelChange, theme: _theme = "light", 
         </div>
       )}
     </div>
+    </ChartEditorWrapper>
   );
 }
