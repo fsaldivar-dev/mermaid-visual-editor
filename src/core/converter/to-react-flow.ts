@@ -55,7 +55,7 @@ export function toReactFlow(model: DiagramModel): ReactFlowData {
     sourceHandle: (conn.properties.sourceHandle as string) || "bottom",
     targetHandle: (conn.properties.targetHandle as string) || "top",
     label: conn.label,
-    type: "smoothstep",
+    type: "editable",
     markerEnd: { type: "arrowclosed" as const },
     style: { strokeWidth: 2 },
     data: { ...conn.properties },

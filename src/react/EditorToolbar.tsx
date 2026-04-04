@@ -126,7 +126,7 @@ export function EditorToolbar({
       <div className="mve-toolbar-right">
         {onLayout && mode === "visual" && (
           <button className="mve-action-btn" onClick={onLayout} title="Auto-layout">
-            \u2b4e Layout
+            &#x2637; Layout
           </button>
         )}
         {mode === "visual" && (onExportPng || onExportSvg) && (
