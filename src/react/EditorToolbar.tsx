@@ -49,6 +49,7 @@ interface EditorToolbarProps {
   canRedo?: boolean;
   onExportPng?: () => void;
   onExportSvg?: () => void;
+  onToggleSidebar?: () => void;
   theme?: "light" | "dark";
 }
 
@@ -56,7 +57,7 @@ export function EditorToolbar({
   mode,
   diagramType = "flowchart",
   onModeChange,
-  onAddNode,
+  onAddNode: _onAddNode,
   onDelete,
   onLayout,
   onUndo,
@@ -65,10 +66,12 @@ export function EditorToolbar({
   canRedo = false,
   onExportPng,
   onExportSvg,
+  onToggleSidebar,
   theme = "light",
 }: EditorToolbarProps) {
-  const shapes = SHAPES_BY_TYPE[diagramType] || DEFAULT_SHAPES;
-  const canAddNodes = !["pie", "gantt", "timeline", "journey", "gitgraph"].includes(diagramType);
+  // Shapes moved to ShapeLibrarySidebar — kept here for backward compat
+  const _shapes = SHAPES_BY_TYPE[diagramType] || DEFAULT_SHAPES;
+  void _shapes; void _onAddNode;
 
   return (
     <div className="mve-toolbar" data-theme={theme} role="toolbar" aria-label="Editor toolbar">
@@ -112,21 +115,13 @@ export function EditorToolbar({
         )}
       </div>
 
-      {mode === "visual" && canAddNodes && (
-        <div className="mve-toolbar-center">
-          {shapes.map((s) => (
-            <button
-              key={s.type}
-              className="mve-shape-btn"
-              onClick={() => onAddNode?.(s.type)}
-              title={s.label}
-            >
-              <span className="mve-shape-icon">{s.icon}</span>
-              <span className="mve-shape-label">{s.label}</span>
-            </button>
-          ))}
-        </div>
-      )}
+      <div className="mve-toolbar-center">
+        {mode === "visual" && onToggleSidebar && (
+          <button className="mve-action-btn" onClick={onToggleSidebar} title="Toggle shape library">
+            &#x2630; Shapes
+          </button>
+        )}
+      </div>
 
       <div className="mve-toolbar-right">
         {onLayout && mode === "visual" && (

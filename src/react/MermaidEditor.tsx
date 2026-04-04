@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { DiagramModel } from "../core/model/types";
 import { parse } from "../core/parser";
 import { serialize } from "../core/serializer";
 import { applyDagreLayout } from "../core/layout/dagre-layout";
 import { VisualEditor } from "./VisualEditor";
 import { EditorToolbar, type EditorMode } from "./EditorToolbar";
+import { ShapeLibrarySidebar } from "./components/ShapeLibrarySidebar";
 import { useHistory } from "./hooks/useHistory";
-import { useState } from "react";
 
 export interface MermaidEditorProps {
   value?: string;
@@ -37,6 +37,7 @@ export function MermaidEditor({
 }: MermaidEditorProps) {
   const [internalMode, setInternalMode] = useState<EditorMode>("visual");
   const mode = controlledMode ?? internalMode;
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const initialModel = useRef(() => {
     const parsed = parse(value);
@@ -44,29 +45,18 @@ export function MermaidEditor({
   }).current;
 
   const {
-    model,
-    setModel,
-    undo,
-    redo,
-    canUndo,
-    canRedo,
-    resetHistory,
+    model, setModel, undo, redo, canUndo, canRedo, resetHistory,
   } = useHistory(initialModel());
 
   const lastValueRef = useRef(value);
   const isInternalChange = useRef(false);
 
-  // Sync from external value changes
   useEffect(() => {
-    if (isInternalChange.current) {
-      isInternalChange.current = false;
-      return;
-    }
+    if (isInternalChange.current) { isInternalChange.current = false; return; }
     if (value !== lastValueRef.current) {
       lastValueRef.current = value;
       const parsed = parse(value);
-      const laid = applyDagreLayout(parsed);
-      resetHistory(laid);
+      resetHistory(applyDagreLayout(parsed));
     }
   }, [value, resetHistory]);
 
@@ -106,21 +96,17 @@ export function MermaidEditor({
 
   const handleModeChange = useCallback(
     (newMode: EditorMode) => {
-      if (onModeChange) {
-        onModeChange(newMode);
-      } else {
-        setInternalMode(newMode);
-      }
+      if (onModeChange) onModeChange(newMode);
+      else setInternalMode(newMode);
     },
     [onModeChange]
   );
 
   const handleLayout = useCallback(() => {
-    const laid = applyDagreLayout(model);
-    handleModelChange(laid);
+    handleModelChange(applyDagreLayout(model));
   }, [model, handleModelChange]);
 
-  const addNodeRef = useRef<((type: string) => void) | null>(null);
+  const addNodeRef = useRef<((type: string, label?: string, position?: { x: number; y: number }) => void) | null>(null);
   const exportRef = useRef<{ exportToPng: () => void; exportToSvg: () => void } | null>(null);
 
   return (
@@ -147,40 +133,52 @@ export function MermaidEditor({
           canRedo={canRedo}
           onExportPng={() => exportRef.current?.exportToPng()}
           onExportSvg={() => exportRef.current?.exportToSvg()}
+          onToggleSidebar={() => setSidebarCollapsed((c) => !c)}
           theme={theme}
         />
       )}
 
-      <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
-        {mode === "visual" && (
-          <VisualEditor
-            model={model}
-            onModelChange={handleModelChange}
-            onUndo={handleUndo}
-            onRedo={handleRedo}
+      <div style={{ flex: 1, display: "flex", position: "relative", overflow: "hidden" }}>
+        {mode === "visual" && !readOnly && (
+          <ShapeLibrarySidebar
+            diagramType={model.type}
+            collapsed={sidebarCollapsed}
+            onToggle={() => setSidebarCollapsed((c) => !c)}
             theme={theme}
-            minimap={minimap}
-            readOnly={readOnly}
-            height="100%"
-            addNodeRef={addNodeRef}
-            exportRef={exportRef}
           />
         )}
 
-        {mode === "split" && (
-          <div className="mve-split-placeholder" style={{ padding: 20 }}>
-            <p>Split mode coming in Phase 2 (Monaco + Preview)</p>
-            <pre style={{ whiteSpace: "pre-wrap", fontSize: 13 }}>
-              {serialize(model)}
-            </pre>
-          </div>
-        )}
+        <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
+          {mode === "visual" && (
+            <VisualEditor
+              model={model}
+              onModelChange={handleModelChange}
+              onUndo={handleUndo}
+              onRedo={handleRedo}
+              theme={theme}
+              minimap={minimap}
+              readOnly={readOnly}
+              height="100%"
+              addNodeRef={addNodeRef}
+              exportRef={exportRef}
+            />
+          )}
 
-        {mode === "inline" && (
-          <div className="mve-inline-placeholder" style={{ padding: 20 }}>
-            <p>Inline editing mode coming in Phase 4</p>
-          </div>
-        )}
+          {mode === "split" && (
+            <div className="mve-split-placeholder" style={{ padding: 20 }}>
+              <p>Split mode coming in Phase 2 (Monaco + Preview)</p>
+              <pre style={{ whiteSpace: "pre-wrap", fontSize: 13 }}>
+                {serialize(model)}
+              </pre>
+            </div>
+          )}
+
+          {mode === "inline" && (
+            <div className="mve-inline-placeholder" style={{ padding: 20 }}>
+              <p>Inline editing mode coming in Phase 4</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
