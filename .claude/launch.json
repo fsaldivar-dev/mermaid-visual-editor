@@ -4,9 +4,12 @@
     {
       "name": "playground",
       "runtimeExecutable": "/opt/homebrew/bin/node",
-      "runtimeArgs": ["/opt/homebrew/bin/npx", "vite", "--port", "5176"],
+      "runtimeArgs": ["node_modules/.bin/vite", "--port", "5176"],
       "port": 5176,
-      "cwd": "playground"
+      "cwd": "playground",
+      "env": {
+        "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
+      }
     }
   ]
 }

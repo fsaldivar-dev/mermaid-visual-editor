@@ -174,7 +174,8 @@
 
 .mve-node:hover .react-flow__handle,
 .mve-node.mve-selected .react-flow__handle,
-.mve-node .react-flow__handle.connecting {
+.mve-node .react-flow__handle.connecting,
+.react-flow__node:hover .react-flow__handle {
   opacity: 1;
 }
 
