@@ -168,6 +168,14 @@
   height: 8px;
   background: #0071e3;
   border: 2px solid #fff;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.mve-node:hover .react-flow__handle,
+.mve-node.mve-selected .react-flow__handle,
+.mve-node .react-flow__handle.connecting {
+  opacity: 1;
 }
 
 .mve-node.mve-selected .react-flow__handle {
@@ -999,4 +1007,176 @@
   font-size: 9px;
   font-weight: 700;
   flex-shrink: 0;
+}
+
+/* ── Shape Library Sidebar ── */
+
+.mve-sidebar {
+  width: 200px;
+  background: #f5f5f7;
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  flex-shrink: 0;
+  font-size: 12px;
+}
+
+.mve-sidebar-collapsed {
+  width: 36px;
+}
+
+[data-theme="dark"] .mve-sidebar {
+  background: #1c1c1e;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.mve-sidebar-toggle {
+  padding: 8px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+}
+
+[data-theme="dark"] .mve-sidebar-toggle {
+  color: #aaa;
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.mve-sidebar-header {
+  padding: 8px 12px;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #666;
+  letter-spacing: 0.5px;
+}
+
+[data-theme="dark"] .mve-sidebar-header {
+  color: #999;
+}
+
+.mve-sidebar-category {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.mve-category-toggle {
+  width: 100%;
+  padding: 6px 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 12px;
+  color: #333;
+}
+
+[data-theme="dark"] .mve-category-toggle {
+  color: #ccc;
+}
+
+.mve-category-toggle:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.mve-shape-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px 8px 8px;
+}
+
+.mve-sidebar-shape {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 4px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 6px;
+  cursor: grab;
+  background: #fff;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.mve-sidebar-shape:hover {
+  border-color: #0071e3;
+  box-shadow: 0 1px 4px rgba(0, 113, 227, 0.2);
+}
+
+.mve-sidebar-shape:active {
+  cursor: grabbing;
+}
+
+[data-theme="dark"] .mve-sidebar-shape {
+  background: #2c2c2e;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .mve-sidebar-shape:hover {
+  border-color: #6cb4ff;
+}
+
+.mve-sidebar-shape-icon {
+  font-size: 20px;
+}
+
+.mve-sidebar-shape-label {
+  font-size: 10px;
+  color: #666;
+}
+
+[data-theme="dark"] .mve-sidebar-shape-label {
+  color: #999;
+}
+
+/* ── Node Resize Handles ── */
+
+.mve-resize-handle {
+  width: 8px !important;
+  height: 8px !important;
+  background: #0071e3 !important;
+  border: 2px solid #fff !important;
+  border-radius: 2px !important;
+}
+
+[data-theme="dark"] .mve-resize-handle {
+  border-color: #1c1c1e !important;
+}
+
+.mve-resize-line {
+  border-color: #0071e3 !important;
+}
+
+/* ── Alignment Guides ── */
+
+.mve-alignment-guides {
+  overflow: visible;
+}
+
+/* ── Editable Edge Styles ── */
+
+@keyframes mve-dash {
+  to { stroke-dashoffset: -10; }
+}
+
+.mve-edge-label {
+  font-size: 11px;
+  cursor: default;
+}
+
+.mve-edge-label-selected {
+  background: rgba(0, 113, 227, 0.05) !important;
+}
+
+[data-theme="dark"] .mve-edge-label {
+  background: rgba(44, 44, 46, 0.95) !important;
+  color: #eee;
+  border-color: rgba(255, 255, 255, 0.15) !important;
 }

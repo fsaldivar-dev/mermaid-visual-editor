@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(kill 53641)",
+      "Bash(kill 82173)",
+      "Bash(export PATH=/opt/homebrew/bin:$PATH)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(curl -s http://localhost:5175/src/react/EditorToolbar.tsx)",
+      "Bash(git push:*)"
+    ]
+  }
+}

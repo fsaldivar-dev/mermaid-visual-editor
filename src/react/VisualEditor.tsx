@@ -1,17 +1,22 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ReactFlow,
+  ReactFlowProvider,
   Background,
   Controls,
   MiniMap,
+  Panel,
   addEdge,
   useNodesState,
   useEdgesState,
+  useReactFlow,
   MarkerType,
   SelectionMode,
+  ConnectionMode,
   type Connection,
   type Node,
   type Edge,
+  type NodeChange,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { getNodeTypes } from "./nodes";
@@ -22,10 +27,13 @@ import { fromReactFlow } from "../core/converter/from-react-flow";
 import { useClipboard } from "./hooks/useClipboard";
 import { useExport } from "./hooks/useExport";
 import { useSearch } from "./hooks/useSearch";
+import { useAlignmentGuides } from "./hooks/useAlignmentGuides";
 import { SearchOverlay } from "./components/SearchOverlay";
+import { AlignmentGuides } from "./components/AlignmentGuides";
+import { edgeTypes } from "./edges";
 
 const defaultEdgeOptions = {
-  type: "smoothstep" as const,
+  type: "editable" as const,
   markerEnd: { type: MarkerType.ArrowClosed },
   style: { strokeWidth: 2 },
 };
@@ -41,11 +49,20 @@ export interface VisualEditorProps {
   minimap?: boolean;
   readOnly?: boolean;
   height?: number | string;
-  addNodeRef?: React.MutableRefObject<((type: string) => void) | null>;
+  addNodeRef?: React.MutableRefObject<((type: string, label?: string, position?: { x: number; y: number }) => void) | null>;
   exportRef?: React.MutableRefObject<{ exportToPng: () => void; exportToSvg: () => void } | null>;
 }
 
-export function VisualEditor({
+// Wrapper that provides ReactFlowProvider context
+export function VisualEditor(props: VisualEditorProps) {
+  return (
+    <ReactFlowProvider>
+      <VisualEditorInner {...props} />
+    </ReactFlowProvider>
+  );
+}
+
+function VisualEditorInner({
   model,
   onModelChange,
   onUndo,
@@ -57,19 +74,22 @@ export function VisualEditor({
   addNodeRef,
   exportRef,
 }: VisualEditorProps) {
+  const reactFlowInstance = useReactFlow();
   const initial = useMemo(() => toReactFlow(model), []);
   const [nodes, setNodes, onNodesChange] = useNodesState(initial.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initial.edges);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
+  const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
   // Get node types for current diagram type
   const currentNodeTypes = useMemo(() => getNodeTypes(model.type), [model.type]);
 
-  // Clipboard, export, and search hooks
+  // Clipboard, export, search, and alignment hooks
   const { copy, paste } = useClipboard();
   const { exportToPng, exportToSvg } = useExport();
   const searchState = useSearch(nodes);
+  const { guides, computeGuides, clearGuides } = useAlignmentGuides();
 
   // Sync from external model changes
   useEffect(() => {
@@ -92,13 +112,51 @@ export function VisualEditor({
     [model.type, model.direction, onModelChange]
   );
 
+  // Intercept node changes to capture resize dimensions
+  const handleNodesChange = useCallback(
+    (changes: NodeChange[]) => {
+      if (readOnly) return;
+      onNodesChange(changes);
+
+      // Check for completed resize (dimensions change with resizing=false)
+      const dimensionChanges = changes.filter(
+        (c) => c.type === "dimensions" && "resizing" in c && c.resizing === false
+      );
+      if (dimensionChanges.length > 0) {
+        setNodes((nds) => {
+          let changed = false;
+          const updated = nds.map((n) => {
+            const dc = dimensionChanges.find((c) => "id" in c && c.id === n.id);
+            if (dc && "dimensions" in dc && dc.dimensions) {
+              changed = true;
+              return {
+                ...n,
+                data: {
+                  ...n.data,
+                  width: dc.dimensions.width,
+                  height: dc.dimensions.height,
+                },
+              };
+            }
+            return n;
+          });
+          if (changed) {
+            setTimeout(() => emitChange(updated, edges), 0);
+          }
+          return changed ? updated : nds;
+        });
+      }
+    },
+    [readOnly, onNodesChange, setNodes, edges, emitChange]
+  );
+
   const onConnect = useCallback(
     (connection: Connection) => {
       // Sequence diagram: create a message node instead of an edge
       if (model.type === "sequence" && connection.source && connection.target) {
         const src = connection.source;
         const tgt = connection.target;
-        if (src === tgt) return; // no self-messages
+        if (src === tgt) return;
 
         setNodes((nds) => {
           const participants = nds.filter((n) => n.data?.isParticipant);
@@ -156,21 +214,17 @@ export function VisualEditor({
   );
 
   const addNode = useCallback(
-    (type = "rect") => {
+    (type = "rect", label = "New", position?: { x: number; y: number }) => {
       if (readOnly) return;
       const id = `n${++nodeIdCounter}_${Date.now().toString(36)}`;
+      const pos = position || {
+        x: 200 + Math.random() * 300,
+        y: 100 + Math.random() * 300,
+      };
       setNodes((nds) => {
         const updated = [
           ...nds,
-          {
-            id,
-            type,
-            data: { label: "New" },
-            position: {
-              x: 200 + Math.random() * 300,
-              y: 100 + Math.random() * 300,
-            },
-          },
+          { id, type, data: { label }, position: pos },
         ];
         setTimeout(() => emitChange(updated, edges), 0);
         return updated;
@@ -239,29 +293,22 @@ export function VisualEditor({
           if (n.id !== id) return n;
           const newData = { ...n.data, [key]: value };
 
-          // For sequence messages: recalculate derived fields when From/To/Type changes
           if (newData.isMessage && (key === "sourceParticipant" || key === "targetParticipant" || key === "messageType")) {
             const src = newData.sourceParticipant as string;
             const tgt = newData.targetParticipant as string;
             const msgType = (newData.messageType as string) || "->>";
-
-            // Find participant indices from current nodes
             const participants = nds.filter((p) => p.data?.isParticipant);
             const srcIdx = participants.findIndex((p) => p.id === src);
             const tgtIdx = participants.findIndex((p) => p.id === tgt);
             const leftIdx = Math.min(srcIdx, tgtIdx);
             const rightIdx = Math.max(srcIdx, tgtIdx);
-
             const SPACING = 250;
             const P_WIDTH = 120;
-
             const leftLifelineX = leftIdx * SPACING + P_WIDTH / 2;
             const rightLifelineX = rightIdx * SPACING + P_WIDTH / 2;
-
             newData.goesRight = tgtIdx > srcIdx;
             newData.isReply = msgType.includes("--");
             newData.width = Math.max(rightLifelineX - leftLifelineX, SPACING);
-
             return { ...n, data: newData, position: { ...n.position, x: leftLifelineX } };
           }
 
@@ -294,46 +341,23 @@ export function VisualEditor({
       const isInput = target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.isContentEditable;
       const mod = e.metaKey || e.ctrlKey;
 
-      // Delete/Backspace — only when not in input
       if ((e.key === "Delete" || e.key === "Backspace") && !isInput) {
         deleteSelected();
         return;
       }
-
-      // Ctrl/Cmd+Z — Undo
-      if (mod && e.key === "z" && !e.shiftKey) {
-        e.preventDefault();
-        onUndo?.();
-        return;
-      }
-
-      // Ctrl/Cmd+Shift+Z or Ctrl/Cmd+Y — Redo
-      if ((mod && e.key === "z" && e.shiftKey) || (mod && e.key === "y")) {
-        e.preventDefault();
-        onRedo?.();
-        return;
-      }
-
-      // Ctrl/Cmd+A — Select all (only when not in input)
+      if (mod && e.key === "z" && !e.shiftKey) { e.preventDefault(); onUndo?.(); return; }
+      if ((mod && e.key === "z" && e.shiftKey) || (mod && e.key === "y")) { e.preventDefault(); onRedo?.(); return; }
       if (mod && e.key === "a" && !isInput) {
         e.preventDefault();
         setNodes((nds) => nds.map((n) => ({ ...n, selected: true })));
         setEdges((eds) => eds.map((e) => ({ ...e, selected: true })));
         return;
       }
-
-      // Ctrl/Cmd+C — Copy (only when not in input)
-      if (mod && e.key === "c" && !isInput) {
-        copy(nodes, edges);
-        return;
-      }
-
-      // Ctrl/Cmd+V — Paste (only when not in input)
+      if (mod && e.key === "c" && !isInput) { copy(nodes, edges); return; }
       if (mod && e.key === "v" && !isInput) {
         e.preventDefault();
         const pasted = paste();
         if (pasted) {
-          // Deselect existing nodes
           setNodes((nds) => {
             const deselected = nds.map((n) => ({ ...n, selected: false }));
             const updated = [...deselected, ...pasted.nodes];
@@ -347,15 +371,7 @@ export function VisualEditor({
         }
         return;
       }
-
-      // Ctrl/Cmd+F — Search
-      if (mod && e.key === "f") {
-        e.preventDefault();
-        searchState.open();
-        return;
-      }
-
-      // Ctrl/Cmd+D — Duplicate selected (only when not in input)
+      if (mod && e.key === "f") { e.preventDefault(); searchState.open(); return; }
       if (mod && e.key === "d" && !isInput) {
         e.preventDefault();
         copy(nodes, edges);
@@ -394,9 +410,19 @@ export function VisualEditor({
     setSelectedEdge(null);
   }, []);
 
-  // When a message node is dragged, snap to nearest participant pair and update From/To
+  // Alignment guides during drag
+  const onNodeDrag = useCallback(
+    (_: unknown, node: Node) => {
+      computeGuides(node, nodes);
+    },
+    [computeGuides, nodes]
+  );
+
+  // When a message node is dragged, snap to nearest participant pair
   const onNodeDragStop = useCallback(
     (_: unknown, node: Node) => {
+      clearGuides();
+
       if (model.type !== "sequence" || !node.data?.isMessage) return;
 
       setNodes((nds) => {
@@ -405,12 +431,9 @@ export function VisualEditor({
 
         const SPACING = 250;
         const P_WIDTH = 120;
-
-        // Find the closest participant lifeline to the message's left edge
         const msgX = node.position.x;
         const msgRight = msgX + ((node.data?.width as number) || SPACING);
 
-        // Find nearest participant to left edge and right edge
         let nearestLeft = participants[0];
         let nearestRight = participants[participants.length - 1];
         let minDistLeft = Infinity;
@@ -420,94 +443,108 @@ export function VisualEditor({
           const lifelineX = p.position.x + P_WIDTH / 2;
           const distLeft = Math.abs(lifelineX - msgX);
           const distRight = Math.abs(lifelineX - msgRight);
-          if (distLeft < minDistLeft) {
-            minDistLeft = distLeft;
-            nearestLeft = p;
-          }
-          if (distRight < minDistRight) {
-            minDistRight = distRight;
-            nearestRight = p;
-          }
+          if (distLeft < minDistLeft) { minDistLeft = distLeft; nearestLeft = p; }
+          if (distRight < minDistRight) { minDistRight = distRight; nearestRight = p; }
         }
 
         if (nearestLeft.id === nearestRight.id) {
-          // If snapped to same participant, pick the next one
           const idx = participants.indexOf(nearestLeft);
-          if (idx < participants.length - 1) {
-            nearestRight = participants[idx + 1];
-          } else if (idx > 0) {
-            nearestLeft = participants[idx - 1];
-          }
+          if (idx < participants.length - 1) nearestRight = participants[idx + 1];
+          else if (idx > 0) nearestLeft = participants[idx - 1];
         }
 
         const leftP = participants.indexOf(nearestLeft) <= participants.indexOf(nearestRight) ? nearestLeft : nearestRight;
         const rightP = leftP === nearestLeft ? nearestRight : nearestLeft;
-
-        // Determine direction: was the original source on the left or right?
         const oldGoesRight = node.data?.goesRight as boolean;
         const newSrc = oldGoesRight ? leftP.id : rightP.id;
         const newTgt = oldGoesRight ? rightP.id : leftP.id;
-
         const leftLifelineX = leftP.position.x + P_WIDTH / 2;
         const rightLifelineX = rightP.position.x + P_WIDTH / 2;
         const newWidth = rightLifelineX - leftLifelineX;
-        const newGoesRight = participants.indexOf(
-          participants.find((p) => p.id === newTgt)!
-        ) > participants.indexOf(
-          participants.find((p) => p.id === newSrc)!
-        );
+        const newGoesRight = participants.indexOf(participants.find((p) => p.id === newTgt)!) > participants.indexOf(participants.find((p) => p.id === newSrc)!);
 
         const updated = nds.map((n) => {
           if (n.id !== node.id) return n;
           return {
             ...n,
             position: { x: leftLifelineX, y: n.position.y },
-            data: {
-              ...n.data,
-              sourceParticipant: newSrc,
-              targetParticipant: newTgt,
-              goesRight: newGoesRight,
-              width: newWidth,
-            },
+            data: { ...n.data, sourceParticipant: newSrc, targetParticipant: newTgt, goesRight: newGoesRight, width: newWidth },
           };
         });
 
-        // Update selected node state too
         const updatedNode = updated.find((n) => n.id === node.id);
         if (updatedNode) setSelectedNode(updatedNode);
-
         setTimeout(() => emitChange(updated, edges), 0);
         return updated;
       });
     },
-    [model.type, setNodes, edges, emitChange, setSelectedNode]
+    [model.type, setNodes, edges, emitChange, setSelectedNode, clearGuides]
+  );
+
+  // Drag & Drop from sidebar
+  const onDragOver = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+  }, []);
+
+  const onDrop = useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault();
+      const shapeData = event.dataTransfer.getData("application/mve-shape");
+      if (!shapeData) return;
+
+      const { type, label } = JSON.parse(shapeData);
+      const position = reactFlowInstance.screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+      addNode(type, label || "New", position);
+    },
+    [reactFlowInstance, addNode]
   );
 
   return (
-    <div className="mve-visual-editor" style={{ height }} data-theme={theme}>
+    <div
+      ref={reactFlowWrapper}
+      className="mve-visual-editor"
+      style={{ height }}
+      data-theme={theme}
+    >
       <ReactFlow
         nodes={nodes}
         edges={edges}
-        onNodesChange={readOnly ? undefined : onNodesChange}
+        onNodesChange={readOnly ? undefined : handleNodesChange}
         onEdgesChange={readOnly ? undefined : onEdgesChange}
         onConnect={readOnly ? undefined : onConnect}
         onNodeClick={onNodeClick}
+        onNodeDrag={onNodeDrag}
         onNodeDragStop={onNodeDragStop}
         onEdgeClick={onEdgeClick}
         onPaneClick={onPaneClick}
+        onDrop={onDrop}
+        onDragOver={onDragOver}
         defaultEdgeOptions={defaultEdgeOptions}
         nodeTypes={currentNodeTypes}
+        edgeTypes={edgeTypes}
         fitView
         colorMode={theme === "dark" ? "dark" : "light"}
         selectionOnDrag
         selectionMode={SelectionMode.Partial}
         multiSelectionKeyCode="Meta"
+        connectionMode={ConnectionMode.Loose}
         deleteKeyCode={null}
+        snapToGrid
+        snapGrid={[20, 20]}
       >
         <Background gap={20} size={1} />
         <Controls />
         {minimap && (
           <MiniMap pannable zoomable style={{ height: 80, width: 120 }} />
+        )}
+        {guides.length > 0 && (
+          <Panel position="top-left" style={{ margin: 0, padding: 0, width: "100%", height: "100%", pointerEvents: "none" }}>
+            <AlignmentGuides guides={guides} />
+          </Panel>
         )}
       </ReactFlow>
 
@@ -533,9 +570,7 @@ export function VisualEditor({
           onNodeLabelChange={(id, label) => {
             updateNodeLabel(id, label);
             setSelectedNode((prev) =>
-              prev && prev.id === id
-                ? { ...prev, data: { ...prev.data, label } }
-                : prev
+              prev && prev.id === id ? { ...prev, data: { ...prev.data, label } } : prev
             );
           }}
           onNodeTypeChange={(id, type) => {
@@ -547,9 +582,7 @@ export function VisualEditor({
           onNodePropertyChange={(id, key, value) => {
             updateNodeProperty(id, key, value);
             setSelectedNode((prev) =>
-              prev && prev.id === id
-                ? { ...prev, data: { ...prev.data, [key]: value } }
-                : prev
+              prev && prev.id === id ? { ...prev, data: { ...prev.data, [key]: value } } : prev
             );
           }}
           onEdgeLabelChange={(id, label) => {
@@ -567,9 +600,7 @@ export function VisualEditor({
               return updated;
             });
             setSelectedEdge((prev) =>
-              prev && prev.id === id
-                ? { ...prev, data: { ...prev.data, [key]: value } }
-                : prev
+              prev && prev.id === id ? { ...prev, data: { ...prev.data, [key]: value } } : prev
             );
           }}
           theme={theme}

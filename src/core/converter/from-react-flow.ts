@@ -40,13 +40,19 @@ export function fromReactFlow(
     });
   }
 
-  const connections: DiagramConnection[] = edges.map((edge) => ({
-    id: edge.id,
-    source: edge.source,
-    target: edge.target,
-    label: edge.label as string | undefined,
-    properties: (edge.data as Record<string, unknown>) || {},
-  }));
+  const connections: DiagramConnection[] = edges.map((edge) => {
+    const props = (edge.data as Record<string, unknown>) || {};
+    // Persist handle IDs for multi-side connections
+    if (edge.sourceHandle) props.sourceHandle = edge.sourceHandle;
+    if (edge.targetHandle) props.targetHandle = edge.targetHandle;
+    return {
+      id: edge.id,
+      source: edge.source,
+      target: edge.target,
+      label: edge.label as string | undefined,
+      properties: props,
+    };
+  });
 
   return {
     type,

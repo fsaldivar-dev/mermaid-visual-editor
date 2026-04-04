@@ -1,15 +1,31 @@
-import { Handle, Position } from "@xyflow/react";
+import { Handle, Position, NodeResizer } from "@xyflow/react";
 
 interface NodeProps {
-  data: { label?: string };
+  data: { label?: string; width?: number; height?: number };
   selected?: boolean;
 }
 
 export function DiamondNode({ data, selected }: NodeProps) {
   const color = selected ? "#ff9500" : "#ff9500";
   return (
-    <div className={`mve-node mve-diamond ${selected ? "mve-selected" : ""}`}>
-      <Handle type="target" position={Position.Top} />
+    <div
+      className={`mve-node mve-diamond ${selected ? "mve-selected" : ""}`}
+      style={{
+        width: data?.width ? `${data.width}px` : undefined,
+        height: data?.height ? `${data.height}px` : undefined,
+      }}
+    >
+      <NodeResizer
+        isVisible={!!selected}
+        minWidth={60}
+        minHeight={40}
+        handleClassName="mve-resize-handle"
+        lineClassName="mve-resize-line"
+      />
+      <Handle type="source" position={Position.Top} id="top" className="mve-handle" />
+      <Handle type="source" position={Position.Bottom} id="bottom" className="mve-handle" />
+      <Handle type="source" position={Position.Left} id="left" className="mve-handle" />
+      <Handle type="source" position={Position.Right} id="right" className="mve-handle" />
       <svg
         className="mve-diamond-bg"
         viewBox="0 0 120 80"
@@ -23,7 +39,6 @@ export function DiamondNode({ data, selected }: NodeProps) {
         />
       </svg>
       <span className="mve-diamond-label">{data?.label || ""}</span>
-      <Handle type="source" position={Position.Bottom} />
     </div>
   );
 }
