@@ -6,7 +6,10 @@ import { applyDagreLayout } from "../core/layout/dagre-layout";
 import { VisualEditor } from "./VisualEditor";
 import { EditorToolbar, type EditorMode } from "./EditorToolbar";
 import { ShapeLibrarySidebar } from "./components/ShapeLibrarySidebar";
+import { ChartView } from "./charts";
 import { useHistory } from "./hooks/useHistory";
+
+const CHART_TYPES = new Set(["pie", "gantt", "journey", "timeline"]);
 
 export interface MermaidEditorProps {
   value?: string;
@@ -139,7 +142,7 @@ export function MermaidEditor({
       )}
 
       <div style={{ flex: 1, display: "flex", position: "relative", overflow: "hidden" }}>
-        {mode === "visual" && !readOnly && (
+        {mode === "visual" && !CHART_TYPES.has(model.type) && !readOnly && (
           <ShapeLibrarySidebar
             diagramType={model.type}
             collapsed={sidebarCollapsed}
@@ -149,7 +152,7 @@ export function MermaidEditor({
         )}
 
         <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
-          {mode === "visual" && (
+          {mode === "visual" && !CHART_TYPES.has(model.type) && (
             <VisualEditor
               model={model}
               onModelChange={handleModelChange}
@@ -162,6 +165,10 @@ export function MermaidEditor({
               addNodeRef={addNodeRef}
               exportRef={exportRef}
             />
+          )}
+
+          {mode === "visual" && CHART_TYPES.has(model.type) && (
+            <ChartView model={model} onModelChange={handleModelChange} theme={theme} />
           )}
 
           {mode === "split" && (
