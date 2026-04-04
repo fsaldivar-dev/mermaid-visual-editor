@@ -1,5 +1,6 @@
 import { useCallback } from "react";
-import type { DiagramModel, DiagramElement } from "../../core/model/types";
+import type { DiagramModel, DiagramElement, DiagramConnection } from "../../core/model/types";
+import { ChartEditorWrapper } from "./ChartEditorWrapper";
 
 interface TimelineViewProps {
   model: DiagramModel;
@@ -34,8 +35,60 @@ export function TimelineView({
     ? model.elements.find((el) => el.id === selectedId)
     : null;
 
+  // Add period: creates new period with incremental number, adds connection from last element
+  const addPeriod = useCallback(() => {
+    const nextNum = model.elements.length + 1;
+    const id = `period_${Date.now()}`;
+    const period = `Period ${nextNum}`;
+    const newEl: DiagramElement = {
+      id,
+      label: period,
+      shape: "timelineEvent" as DiagramElement["shape"],
+      position: { x: 0, y: 0 },
+      properties: { period, events: ["New event"] },
+    };
+    const newConnections = [...model.connections];
+    if (model.elements.length > 0) {
+      const lastEl = model.elements[model.elements.length - 1];
+      const conn: DiagramConnection = {
+        id: `conn_${lastEl.id}_${id}`,
+        source: lastEl.id,
+        target: id,
+        properties: {},
+      };
+      newConnections.push(conn);
+    }
+    onModelChange({
+      ...model,
+      elements: [...model.elements, newEl],
+      connections: newConnections,
+    });
+  }, [model, onModelChange]);
+
+  // Delete period: removes element and its connections
+  const deletePeriod = useCallback(
+    (id: string) => {
+      onModelChange({
+        ...model,
+        elements: model.elements.filter((el) => el.id !== id),
+        connections: model.connections.filter(
+          (c) => c.source !== id && c.target !== id
+        ),
+      });
+    },
+    [model, onModelChange]
+  );
+
   return (
-    <div className="mve-chart-container" data-theme={theme}>
+    <ChartEditorWrapper
+      selectedId={selectedId}
+      onSelect={onSelect}
+      onAdd={addPeriod}
+      onDelete={deletePeriod}
+      addLabel="Add Period"
+      elementName="period"
+      theme={theme}
+    >
       {title && <h2 className="mve-chart-title">{title}</h2>}
 
       <div className="mve-timeline">
@@ -138,6 +191,6 @@ export function TimelineView({
           </button>
         </div>
       )}
-    </div>
+    </ChartEditorWrapper>
   );
 }

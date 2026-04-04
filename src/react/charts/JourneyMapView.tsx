@@ -1,5 +1,6 @@
 import { useCallback } from "react";
-import type { DiagramModel, DiagramElement } from "../../core/model/types";
+import type { DiagramModel, DiagramElement, DiagramConnection } from "../../core/model/types";
+import { ChartEditorWrapper } from "./ChartEditorWrapper";
 
 interface JourneyMapViewProps {
   model: DiagramModel;
@@ -58,8 +59,60 @@ export function JourneyMapView({
     ? model.elements.find((el) => el.id === selectedId)
     : null;
 
+  // Add step: appends to last section with score 3, adds connection from last element
+  const addStep = useCallback(() => {
+    const lastSection =
+      sections.length > 0 ? sections[sections.length - 1].name : "Default";
+    const id = `step_${Date.now()}`;
+    const newEl: DiagramElement = {
+      id,
+      label: "New Step (3/5)",
+      shape: "journeyStep" as DiagramElement["shape"],
+      position: { x: 0, y: 0 },
+      properties: { section: lastSection, score: 3, rawLabel: "New Step" },
+    };
+    const newConnections = [...model.connections];
+    if (model.elements.length > 0) {
+      const lastEl = model.elements[model.elements.length - 1];
+      const conn: DiagramConnection = {
+        id: `conn_${lastEl.id}_${id}`,
+        source: lastEl.id,
+        target: id,
+        properties: {},
+      };
+      newConnections.push(conn);
+    }
+    onModelChange({
+      ...model,
+      elements: [...model.elements, newEl],
+      connections: newConnections,
+    });
+  }, [model, onModelChange, sections]);
+
+  // Delete step: removes element and its connections
+  const deleteStep = useCallback(
+    (id: string) => {
+      onModelChange({
+        ...model,
+        elements: model.elements.filter((el) => el.id !== id),
+        connections: model.connections.filter(
+          (c) => c.source !== id && c.target !== id
+        ),
+      });
+    },
+    [model, onModelChange]
+  );
+
   return (
-    <div className="mve-chart-container" data-theme={theme}>
+    <ChartEditorWrapper
+      selectedId={selectedId}
+      onSelect={onSelect}
+      onAdd={addStep}
+      onDelete={deleteStep}
+      addLabel="Add Step"
+      elementName="step"
+      theme={theme}
+    >
       {title && <h2 className="mve-chart-title">{title}</h2>}
 
       {sections.map((section) => (
@@ -159,6 +212,6 @@ export function JourneyMapView({
           </button>
         </div>
       )}
-    </div>
+    </ChartEditorWrapper>
   );
 }

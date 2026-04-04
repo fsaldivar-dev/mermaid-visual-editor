@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import type { DiagramModel, DiagramElement } from "../../core/model/types";
+import { ChartEditorWrapper } from "./ChartEditorWrapper";
 
 interface PieChartViewProps {
   model: DiagramModel;
@@ -35,6 +36,27 @@ export function PieChartView({ model, onModelChange, theme: _theme = "light", se
     [model, onModelChange]
   );
 
+  const addSlice = useCallback(() => {
+    const existingIds = model.elements.map((el) => el.id);
+    let idx = model.elements.length;
+    while (existingIds.includes(`p${idx}`)) idx++;
+    const newId = `p${idx}`;
+    const newElement: DiagramElement = {
+      id: newId,
+      label: "New Slice (10)",
+      shape: "circle",
+      position: { x: 0, y: 0 },
+      properties: { value: 10, rawLabel: "New Slice" },
+    };
+    onModelChange({ ...model, elements: [...model.elements, newElement] });
+    onSelect(newId);
+  }, [model, onModelChange, onSelect]);
+
+  const deleteSlice = useCallback((id: string) => {
+    const newElements = model.elements.filter((el) => el.id !== id);
+    onModelChange({ ...model, elements: newElements });
+  }, [model, onModelChange]);
+
   const selectedElement = selectedId ? model.elements.find((el) => el.id === selectedId) : null;
 
   // Build slices
@@ -60,81 +82,91 @@ export function PieChartView({ model, onModelChange, theme: _theme = "light", se
   });
 
   return (
-    <div className="mve-chart-container" style={{ position: "relative" }}>
-      {title && <div className="mve-chart-title">{title}</div>}
+    <ChartEditorWrapper
+      theme={_theme}
+      selectedId={selectedId}
+      onSelect={onSelect}
+      onAdd={addSlice}
+      onDelete={deleteSlice}
+      addLabel="Add Slice"
+      elementName="slice"
+    >
+      <div className="mve-chart-container" style={{ position: "relative" }}>
+        {title && <div className="mve-chart-title">{title}</div>}
 
-      <svg
-        className="mve-pie-svg"
-        width={300}
-        height={300}
-        viewBox="0 0 300 300"
-      >
-        {slices.map((slice) => (
-          <path
-            key={slice.element.id}
-            d={slice.path}
-            fill={slice.color}
-            className={`mve-pie-slice${selectedId === slice.element.id ? " selected" : ""}`}
-            onClick={() => onSelect(slice.element.id)}
-          />
-        ))}
-      </svg>
-
-      <div className="mve-pie-legend">
-        {slices.map((slice) => (
-          <div
-            key={slice.element.id}
-            className="mve-pie-legend-item"
-            style={{ cursor: "pointer" }}
-            onClick={() => onSelect(slice.element.id)}
-          >
-            <span className="mve-pie-legend-dot" style={{ background: slice.color }} />
-            <span>
-              {String(slice.element.properties.rawLabel || slice.element.label)} &mdash; {slice.value} ({slice.percentage}%)
-            </span>
-          </div>
-        ))}
-      </div>
-
-      {selectedElement && (
-        <div className="mve-chart-edit">
-          <h4>Edit Slice</h4>
-          <label>
-            Name
-            <input
-              type="text"
-              value={String(selectedElement.properties.rawLabel || "")}
-              onChange={(e) =>
-                updateElement(selectedElement.id, {
-                  properties: { ...selectedElement.properties, rawLabel: e.target.value },
-                  label: `${e.target.value} (${selectedElement.properties.value})`,
-                })
-              }
+        <svg
+          className="mve-pie-svg"
+          width={300}
+          height={300}
+          viewBox="0 0 300 300"
+        >
+          {slices.map((slice) => (
+            <path
+              key={slice.element.id}
+              d={slice.path}
+              fill={slice.color}
+              className={`mve-pie-slice${selectedId === slice.element.id ? " selected" : ""}`}
+              onClick={() => onSelect(slice.element.id)}
             />
-          </label>
-          <label>
-            Value
-            <input
-              type="number"
-              min={0}
-              value={Number(selectedElement.properties.value) || 0}
-              onChange={(e) => {
-                const v = Number(e.target.value) || 0;
-                updateElement(selectedElement.id, {
-                  properties: { ...selectedElement.properties, value: v },
-                  label: `${selectedElement.properties.rawLabel} (${v})`,
-                });
-              }}
-            />
-          </label>
-          <button
-            style={{ marginTop: 8, fontSize: 12, cursor: "pointer" }}
-            onClick={() => onSelect(null)}
-          >
-            Close
-          </button>
+          ))}
+        </svg>
+
+        <div className="mve-pie-legend">
+          {slices.map((slice) => (
+            <div
+              key={slice.element.id}
+              className="mve-pie-legend-item"
+              style={{ cursor: "pointer" }}
+              onClick={() => onSelect(slice.element.id)}
+            >
+              <span className="mve-pie-legend-dot" style={{ background: slice.color }} />
+              <span>
+                {String(slice.element.properties.rawLabel || slice.element.label)} &mdash; {slice.value} ({slice.percentage}%)
+              </span>
+            </div>
+          ))}
         </div>
-      )}
-    </div>
+
+        {selectedElement && (
+          <div className="mve-chart-edit">
+            <h4>Edit Slice</h4>
+            <label>
+              Name
+              <input
+                type="text"
+                value={String(selectedElement.properties.rawLabel || "")}
+                onChange={(e) =>
+                  updateElement(selectedElement.id, {
+                    properties: { ...selectedElement.properties, rawLabel: e.target.value },
+                    label: `${e.target.value} (${selectedElement.properties.value})`,
+                  })
+                }
+              />
+            </label>
+            <label>
+              Value
+              <input
+                type="number"
+                min={0}
+                value={Number(selectedElement.properties.value) || 0}
+                onChange={(e) => {
+                  const v = Number(e.target.value) || 0;
+                  updateElement(selectedElement.id, {
+                    properties: { ...selectedElement.properties, value: v },
+                    label: `${selectedElement.properties.rawLabel} (${v})`,
+                  });
+                }}
+              />
+            </label>
+            <button
+              style={{ marginTop: 8, fontSize: 12, cursor: "pointer" }}
+              onClick={() => onSelect(null)}
+            >
+              Close
+            </button>
+          </div>
+        )}
+      </div>
+    </ChartEditorWrapper>
   );
 }

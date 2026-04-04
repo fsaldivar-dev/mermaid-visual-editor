@@ -1,5 +1,6 @@
-import { useCallback, useMemo } from "react";
-import type { DiagramModel, DiagramElement } from "../../core/model/types";
+import { useCallback, useMemo, useState } from "react";
+import type { DiagramModel, DiagramElement, DiagramConnection } from "../../core/model/types";
+import { ChartEditorWrapper } from "./ChartEditorWrapper";
 
 interface MindmapViewProps {
   model: DiagramModel;
@@ -170,7 +171,7 @@ function nodeHeight(depth: number): number {
   return 30;
 }
 
-export function MindmapView({ model, onModelChange, theme: _theme = "light", selectedId, onSelect }: MindmapViewProps) {
+export function MindmapView({ model, onModelChange, theme = "light", selectedId, onSelect }: MindmapViewProps) {
   const tree = useMemo(() => {
     const root = buildTree(model.elements, model.connections);
     if (!root) return null;
@@ -185,6 +186,8 @@ export function MindmapView({ model, onModelChange, theme: _theme = "light", sel
 
   const selectedElement = selectedId ? model.elements.find((el) => el.id === selectedId) : null;
 
+  const [childCounter, setChildCounter] = useState(1);
+
   const updateElement = useCallback(
     (id: string, updates: Partial<DiagramElement>) => {
       const newElements = model.elements.map((el) =>
@@ -195,6 +198,87 @@ export function MindmapView({ model, onModelChange, theme: _theme = "light", sel
     [model, onModelChange],
   );
 
+  // Find the root element (no incoming connections)
+  const rootId = useMemo(() => {
+    const hasParent = new Set(model.connections.map((c) => c.target));
+    const root = model.elements.find((el) => !hasParent.has(el.id));
+    return root?.id || model.elements[0]?.id;
+  }, [model.elements, model.connections]);
+
+  /** Collect all descendant IDs of a node (inclusive) */
+  const collectDescendantIds = useCallback(
+    (nodeId: string): string[] => {
+      const childMap = new Map<string, string[]>();
+      for (const conn of model.connections) {
+        if (!childMap.has(conn.source)) childMap.set(conn.source, []);
+        childMap.get(conn.source)!.push(conn.target);
+      }
+      const result: string[] = [];
+      const stack = [nodeId];
+      while (stack.length > 0) {
+        const id = stack.pop()!;
+        result.push(id);
+        const children = childMap.get(id) || [];
+        stack.push(...children);
+      }
+      return result;
+    },
+    [model.connections]
+  );
+
+  const addChild = useCallback(
+    (parentId: string, label: string) => {
+      const id = `node_${Date.now()}_${childCounter}`;
+      setChildCounter((c) => c + 1);
+
+      // Determine depth from parent
+      const parentEl = model.elements.find((el) => el.id === parentId);
+      const parentDepth = (parentEl?.properties.depth as number) ?? 0;
+
+      const newEl: DiagramElement = {
+        id,
+        label,
+        shape: "box" as DiagramElement["shape"],
+        position: { x: 0, y: 0 },
+        properties: { depth: parentDepth + 1 },
+      };
+      const newConn: DiagramConnection = {
+        id: `conn_${parentId}_${id}`,
+        source: parentId,
+        target: id,
+        properties: {},
+      };
+      onModelChange({
+        ...model,
+        elements: [...model.elements, newEl],
+        connections: [...model.connections, newConn],
+      });
+    },
+    [model, onModelChange, childCounter]
+  );
+
+  // Add root child: no-arg wrapper for ChartEditorWrapper's onAdd
+  const addRootChild = useCallback(() => {
+    if (rootId) addChild(rootId, "New Branch");
+  }, [rootId, addChild]);
+
+  const deleteNode = useCallback(
+    (nodeId: string) => {
+      // Cannot delete the root
+      if (nodeId === rootId) return;
+      const idsToRemove = new Set(collectDescendantIds(nodeId));
+      onModelChange({
+        ...model,
+        elements: model.elements.filter((el) => !idsToRemove.has(el.id)),
+        connections: model.connections.filter(
+          (c) => !idsToRemove.has(c.source) && !idsToRemove.has(c.target)
+        ),
+      });
+      onSelect(null);
+    },
+    [model, onModelChange, onSelect, rootId, collectDescendantIds]
+  );
+
   if (!tree) {
     return (
       <div style={{ padding: 24, textAlign: "center", color: "#999" }}>
@@ -203,8 +287,18 @@ export function MindmapView({ model, onModelChange, theme: _theme = "light", sel
     );
   }
 
+  const isRoot = selectedId === rootId;
+
   return (
-    <div className="mve-chart-container" style={{ position: "relative" }}>
+    <ChartEditorWrapper
+      selectedId={selectedId}
+      onSelect={onSelect}
+      onAdd={addRootChild}
+      onDelete={deleteNode}
+      addLabel="Add Branch"
+      elementName="node"
+      theme={theme}
+    >
       <svg className="mve-mindmap" viewBox={viewBox}>
         <defs>
           <filter id="mm-shadow" x="-20%" y="-20%" width="140%" height="140%">
@@ -293,14 +387,31 @@ export function MindmapView({ model, onModelChange, theme: _theme = "light", sel
               }
             />
           </label>
-          <button
-            style={{ marginTop: 8, fontSize: 12, cursor: "pointer" }}
-            onClick={() => onSelect(null)}
-          >
-            Close
-          </button>
+          <div className="mve-btn-row">
+            <button
+              className="mve-chart-btn mve-chart-btn-primary"
+              onClick={() => addChild(selectedElement.id, "New topic")}
+            >
+              + Add Child
+            </button>
+            {!isRoot && (
+              <button
+                className="mve-chart-btn mve-chart-btn-danger"
+                onClick={() => deleteNode(selectedElement.id)}
+              >
+                Delete
+              </button>
+            )}
+            <button
+              className="mve-chart-btn"
+              style={{ background: "#e5e7eb", color: "#374151" }}
+              onClick={() => onSelect(null)}
+            >
+              Close
+            </button>
+          </div>
         </div>
       )}
-    </div>
+    </ChartEditorWrapper>
   );
 }
