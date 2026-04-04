@@ -1,12 +1,13 @@
 import { Handle, Position, NodeResizer } from "@xyflow/react";
 
 interface NodeProps {
-  data: { label?: string; width?: number; height?: number };
+  data: { label?: string; width?: number; height?: number; fillColor?: string; borderColor?: string; fontColor?: string };
   selected?: boolean;
 }
 
 export function CylinderNode({ data, selected }: NodeProps) {
-  const color = selected ? "#ff9500" : "#6366f1";
+  const defaultColor = "#6366f1";
+  const color = selected ? "#ff9500" : (data?.borderColor || defaultColor);
   return (
     <div
       className={`mve-node mve-cylinder ${selected ? "mve-selected" : ""}`}
@@ -34,15 +35,15 @@ export function CylinderNode({ data, selected }: NodeProps) {
         </defs>
         <path
           d={`M 2,16 Q 2,4 60,4 Q 118,4 118,16 L 118,64 Q 118,76 60,76 Q 2,76 2,64 Z`}
-          fill="var(--mve-bg, #fff)" stroke={color} strokeWidth="1.5"
+          fill={data?.fillColor || "var(--mve-bg, #fff)"} stroke={color} strokeWidth="1.5"
           strokeLinejoin="round" filter="url(#cylinder-shadow)"
         />
         <ellipse
           cx="60" cy="16" rx="58" ry="12"
-          fill="var(--mve-bg, #fff)" stroke={color} strokeWidth="1.5"
+          fill={data?.fillColor || "var(--mve-bg, #fff)"} stroke={color} strokeWidth="1.5"
         />
       </svg>
-      <span className="mve-shape-label">{data?.label || ""}</span>
+      <span className="mve-shape-label" style={data?.fontColor ? { color: data.fontColor } : undefined}>{data?.label || ""}</span>
     </div>
   );
 }

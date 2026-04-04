@@ -8,7 +8,7 @@ const DEFAULT_SHAPES = [
   { type: "circle", label: "Circle", icon: "\u25cb" },
 ];
 
-export function GenericNodePanel({ node, onLabelChange, onTypeChange }: NodePanelProps) {
+export function GenericNodePanel({ node, onLabelChange, onTypeChange, onPropertyChange }: NodePanelProps) {
   const label = (node.data?.label as string) || "";
 
   return (
@@ -34,6 +34,54 @@ export function GenericNodePanel({ node, onLabelChange, onTypeChange }: NodePane
             </option>
           ))}
         </select>
+      </label>
+      <label>
+        <span>Fill Color</span>
+        <div className="mve-color-row">
+          <input
+            type="color"
+            className="mve-color-swatch"
+            value={(node.data?.fillColor as string) || "#ffffff"}
+            onChange={(e) => onPropertyChange(node.id, "fillColor", e.target.value)}
+          />
+          <input
+            value={(node.data?.fillColor as string) || "#ffffff"}
+            onChange={(e) => onPropertyChange(node.id, "fillColor", e.target.value)}
+            style={{ flex: 1 }}
+          />
+        </div>
+      </label>
+      <label>
+        <span>Border Color</span>
+        <div className="mve-color-row">
+          <input
+            type="color"
+            className="mve-color-swatch"
+            value={(node.data?.borderColor as string) || "#3b82f6"}
+            onChange={(e) => onPropertyChange(node.id, "borderColor", e.target.value)}
+          />
+          <input
+            value={(node.data?.borderColor as string) || "#3b82f6"}
+            onChange={(e) => onPropertyChange(node.id, "borderColor", e.target.value)}
+            style={{ flex: 1 }}
+          />
+        </div>
+      </label>
+      <label>
+        <span>Font Color</span>
+        <div className="mve-color-row">
+          <input
+            type="color"
+            className="mve-color-swatch"
+            value={(node.data?.fontColor as string) || "#1d1d1f"}
+            onChange={(e) => onPropertyChange(node.id, "fontColor", e.target.value)}
+          />
+          <input
+            value={(node.data?.fontColor as string) || "#1d1d1f"}
+            onChange={(e) => onPropertyChange(node.id, "fontColor", e.target.value)}
+            style={{ flex: 1 }}
+          />
+        </div>
       </label>
     </>
   );
