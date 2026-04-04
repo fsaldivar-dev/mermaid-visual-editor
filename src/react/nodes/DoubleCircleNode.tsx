@@ -1,12 +1,13 @@
 import { Handle, Position, NodeResizer } from "@xyflow/react";
 
 interface NodeProps {
-  data: { label?: string; width?: number; height?: number };
+  data: { label?: string; width?: number; height?: number; fillColor?: string; borderColor?: string; fontColor?: string };
   selected?: boolean;
 }
 
 export function DoubleCircleNode({ data, selected }: NodeProps) {
-  const color = selected ? "#ff9500" : "#8b5cf6";
+  const defaultColor = "#8b5cf6";
+  const color = selected ? "#ff9500" : (data?.borderColor || defaultColor);
   return (
     <div
       className={`mve-node mve-doublecircle ${selected ? "mve-selected" : ""}`}
@@ -35,7 +36,7 @@ export function DoubleCircleNode({ data, selected }: NodeProps) {
         </defs>
         <circle
           cx="40" cy="40" r="38"
-          fill="var(--mve-bg, #fff)" stroke={color} strokeWidth="1.5"
+          fill={data?.fillColor || "var(--mve-bg, #fff)"} stroke={color} strokeWidth="1.5"
           filter="url(#doublecircle-shadow)"
         />
         <circle
@@ -43,7 +44,7 @@ export function DoubleCircleNode({ data, selected }: NodeProps) {
           fill="none" stroke={color} strokeWidth="1.5"
         />
       </svg>
-      <span className="mve-shape-label">{data?.label || ""}</span>
+      <span className="mve-shape-label" style={data?.fontColor ? { color: data.fontColor } : undefined}>{data?.label || ""}</span>
     </div>
   );
 }

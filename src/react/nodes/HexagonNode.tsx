@@ -1,12 +1,13 @@
 import { Handle, Position, NodeResizer } from "@xyflow/react";
 
 interface NodeProps {
-  data: { label?: string; width?: number; height?: number };
+  data: { label?: string; width?: number; height?: number; fillColor?: string; borderColor?: string; fontColor?: string };
   selected?: boolean;
 }
 
 export function HexagonNode({ data, selected }: NodeProps) {
-  const color = selected ? "#ff9500" : "#ec4899";
+  const defaultColor = "#ec4899";
+  const color = selected ? "#ff9500" : (data?.borderColor || defaultColor);
   return (
     <div
       className={`mve-node mve-hexagon ${selected ? "mve-selected" : ""}`}
@@ -34,11 +35,11 @@ export function HexagonNode({ data, selected }: NodeProps) {
         </defs>
         <polygon
           points="20,2 140,2 158,30 140,58 20,58 2,30"
-          fill="var(--mve-bg, #fff)" stroke={color} strokeWidth="1.5"
+          fill={data?.fillColor || "var(--mve-bg, #fff)"} stroke={color} strokeWidth="1.5"
           strokeLinejoin="round" filter="url(#hexagon-shadow)"
         />
       </svg>
-      <span className="mve-shape-label">{data?.label || ""}</span>
+      <span className="mve-shape-label" style={data?.fontColor ? { color: data.fontColor } : undefined}>{data?.label || ""}</span>
     </div>
   );
 }

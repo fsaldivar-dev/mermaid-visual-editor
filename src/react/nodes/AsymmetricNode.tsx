@@ -1,12 +1,13 @@
 import { Handle, Position, NodeResizer } from "@xyflow/react";
 
 interface NodeProps {
-  data: { label?: string; width?: number; height?: number };
+  data: { label?: string; width?: number; height?: number; fillColor?: string; borderColor?: string; fontColor?: string };
   selected?: boolean;
 }
 
 export function AsymmetricNode({ data, selected }: NodeProps) {
-  const color = selected ? "#ff9500" : "#ef4444";
+  const defaultColor = "#ef4444";
+  const color = selected ? "#ff9500" : (data?.borderColor || defaultColor);
   return (
     <div
       className={`mve-node mve-asymmetric ${selected ? "mve-selected" : ""}`}
@@ -34,11 +35,11 @@ export function AsymmetricNode({ data, selected }: NodeProps) {
         </defs>
         <polygon
           points="2,2 130,2 158,24 130,46 2,46"
-          fill="var(--mve-bg, #fff)" stroke={color} strokeWidth="1.5"
+          fill={data?.fillColor || "var(--mve-bg, #fff)"} stroke={color} strokeWidth="1.5"
           strokeLinejoin="round" filter="url(#asymmetric-shadow)"
         />
       </svg>
-      <span className="mve-shape-label">{data?.label || ""}</span>
+      <span className="mve-shape-label" style={data?.fontColor ? { color: data.fontColor } : undefined}>{data?.label || ""}</span>
     </div>
   );
 }

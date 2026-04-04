@@ -31,6 +31,7 @@ import { useSearch } from "./hooks/useSearch";
 import { useAlignmentGuides } from "./hooks/useAlignmentGuides";
 import { SearchOverlay } from "./components/SearchOverlay";
 import { AlignmentGuides } from "./components/AlignmentGuides";
+import { ContextMenu, type ContextMenuItem } from "./components/ContextMenu";
 import { edgeTypes, EdgeMarkers } from "./edges";
 import { useSmartEdges } from "./hooks/useSmartEdges";
 
@@ -83,6 +84,7 @@ function VisualEditorInner({
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
   const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; nodeId?: string; edgeId?: string } | null>(null);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
   // Get node types for current diagram type
@@ -370,6 +372,265 @@ function VisualEditorInner({
     [setEdges, nodes, emitChange]
   );
 
+  // Delete a specific node by ID
+  const deleteNodeById = useCallback(
+    (nodeId: string) => {
+      if (readOnly) return;
+      setNodes((nds) => {
+        const filtered = nds.filter((n) => n.id !== nodeId);
+        setEdges((eds) => {
+          const filteredEdges = eds.filter((e) => e.source !== nodeId && e.target !== nodeId);
+          setTimeout(() => emitChange(filtered, filteredEdges), 0);
+          return filteredEdges;
+        });
+        return filtered;
+      });
+      setSelectedNode(null);
+    },
+    [setNodes, setEdges, emitChange, readOnly]
+  );
+
+  // Delete a specific edge by ID
+  const deleteEdgeById = useCallback(
+    (edgeId: string) => {
+      if (readOnly) return;
+      setEdges((eds) => {
+        const filtered = eds.filter((e) => e.id !== edgeId);
+        setTimeout(() => emitChange(nodes, filtered), 0);
+        return filtered;
+      });
+      setSelectedEdge(null);
+    },
+    [setEdges, nodes, emitChange, readOnly]
+  );
+
+  // Update edge style property
+  const updateEdgeStyle = useCallback(
+    (edgeId: string, styleKey: string, value: string) => {
+      setEdges((eds) => {
+        const updated = eds.map((e) => {
+          if (e.id !== edgeId) return e;
+          const currentStyle = e.style || {};
+          let newStyle = { ...currentStyle };
+          if (styleKey === "strokeDasharray") {
+            newStyle = { ...newStyle, strokeDasharray: value || undefined };
+          } else if (styleKey === "strokeWidth") {
+            newStyle = { ...newStyle, strokeWidth: Number(value) };
+          }
+          return { ...e, style: newStyle };
+        });
+        setTimeout(() => emitChange(nodes, updated), 0);
+        return updated;
+      });
+    },
+    [setEdges, nodes, emitChange]
+  );
+
+  // Build context menu items for a node
+  const buildNodeContextItems = useCallback(
+    (nodeId: string): ContextMenuItem[] => {
+      return [
+        {
+          label: "Edit Label",
+          icon: "\u270f\ufe0f",
+          action: () => setEditingNodeId(nodeId),
+          shortcut: "Dbl-click",
+        },
+        {
+          label: "Copy",
+          icon: "\ud83d\udccb",
+          action: () => {
+            const node = nodes.find((n) => n.id === nodeId);
+            if (node) {
+              const selected = nodes.map((n) => (n.id === nodeId ? { ...n, selected: true } : { ...n, selected: false }));
+              copy(selected, edges);
+            }
+          },
+          shortcut: "\u2318C",
+        },
+        {
+          label: "Duplicate",
+          icon: "\ud83d\udcc4",
+          action: () => {
+            const selected = nodes.map((n) => (n.id === nodeId ? { ...n, selected: true } : { ...n, selected: false }));
+            copy(selected, edges);
+            const pasted = paste();
+            if (pasted) {
+              setNodes((nds) => {
+                const deselected = nds.map((n) => ({ ...n, selected: false }));
+                const updated = [...deselected, ...pasted.nodes];
+                setEdges((eds) => {
+                  const updatedEdges = [...eds, ...pasted.edges];
+                  setTimeout(() => emitChange(updated, updatedEdges), 0);
+                  return updatedEdges;
+                });
+                return updated;
+              });
+            }
+          },
+          shortcut: "\u2318\u21e7D",
+        },
+        {
+          label: "Delete",
+          icon: "\ud83d\uddd1\ufe0f",
+          action: () => deleteNodeById(nodeId),
+          shortcut: "\u232b",
+        },
+        { label: "", icon: "", action: () => {}, divider: true },
+        {
+          label: "Rectangle",
+          icon: "\u25ad",
+          action: () => updateNodeType(nodeId, "rect"),
+        },
+        {
+          label: "Rounded",
+          icon: "\u25a2",
+          action: () => updateNodeType(nodeId, "rounded"),
+        },
+        {
+          label: "Diamond",
+          icon: "\u25c7",
+          action: () => updateNodeType(nodeId, "diamond"),
+        },
+        {
+          label: "Circle",
+          icon: "\u25cb",
+          action: () => updateNodeType(nodeId, "circle"),
+        },
+      ];
+    },
+    [nodes, edges, copy, paste, setNodes, setEdges, emitChange, deleteNodeById, updateNodeType]
+  );
+
+  // Build context menu items for an edge
+  const buildEdgeContextItems = useCallback(
+    (edgeId: string): ContextMenuItem[] => {
+      return [
+        {
+          label: "Edit Label",
+          icon: "\u270f\ufe0f",
+          action: () => {
+            const edge = edges.find((e) => e.id === edgeId);
+            if (edge) {
+              setSelectedEdge(edge);
+              setSelectedNode(null);
+            }
+          },
+        },
+        {
+          label: "Delete",
+          icon: "\ud83d\uddd1\ufe0f",
+          action: () => deleteEdgeById(edgeId),
+          shortcut: "\u232b",
+        },
+        { label: "", icon: "", action: () => {}, divider: true },
+        {
+          label: "Solid",
+          icon: "\u2500",
+          action: () => {
+            updateEdgeStyle(edgeId, "strokeDasharray", "");
+            updateEdgeStyle(edgeId, "strokeWidth", "2");
+          },
+        },
+        {
+          label: "Dotted",
+          icon: "\u2504",
+          action: () => {
+            updateEdgeStyle(edgeId, "strokeDasharray", "5,5");
+            updateEdgeStyle(edgeId, "strokeWidth", "2");
+          },
+        },
+        {
+          label: "Thick",
+          icon: "\u2501",
+          action: () => {
+            updateEdgeStyle(edgeId, "strokeDasharray", "");
+            updateEdgeStyle(edgeId, "strokeWidth", "4");
+          },
+        },
+      ];
+    },
+    [edges, deleteEdgeById, updateEdgeStyle]
+  );
+
+  // Build context menu items for pane (empty space)
+  const buildPaneContextItems = useCallback(
+    (flowPosition: { x: number; y: number }): ContextMenuItem[] => {
+      return [
+        {
+          label: "Add Rectangle",
+          icon: "\u2795",
+          action: () => addNode("rect", "New", flowPosition),
+        },
+        {
+          label: "Add Rounded",
+          icon: "\u2795",
+          action: () => addNode("rounded", "New", flowPosition),
+        },
+        {
+          label: "Add Diamond",
+          icon: "\u2795",
+          action: () => addNode("diamond", "New", flowPosition),
+        },
+        {
+          label: "Add Circle",
+          icon: "\u2795",
+          action: () => addNode("circle", "New", flowPosition),
+        },
+        { label: "", icon: "", action: () => {}, divider: true },
+        {
+          label: "Paste",
+          icon: "\ud83d\udccb",
+          action: () => {
+            const pasted = paste();
+            if (pasted) {
+              setNodes((nds) => {
+                const deselected = nds.map((n) => ({ ...n, selected: false }));
+                const updated = [...deselected, ...pasted.nodes];
+                setEdges((eds) => {
+                  const updatedEdges = [...eds, ...pasted.edges];
+                  setTimeout(() => emitChange(updated, updatedEdges), 0);
+                  return updatedEdges;
+                });
+                return updated;
+              });
+            }
+          },
+          shortcut: "\u2318V",
+        },
+      ];
+    },
+    [addNode, paste, setNodes, setEdges, emitChange]
+  );
+
+  // Context menu handlers
+  const onNodeContextMenu = useCallback(
+    (event: React.MouseEvent, node: Node) => {
+      if (readOnly) return;
+      event.preventDefault();
+      setContextMenu({ x: event.clientX, y: event.clientY, nodeId: node.id });
+    },
+    [readOnly]
+  );
+
+  const onEdgeContextMenu = useCallback(
+    (event: React.MouseEvent, edge: Edge) => {
+      if (readOnly) return;
+      event.preventDefault();
+      setContextMenu({ x: event.clientX, y: event.clientY, edgeId: edge.id });
+    },
+    [readOnly]
+  );
+
+  const onPaneContextMenu = useCallback(
+    (event: React.MouseEvent | MouseEvent) => {
+      if (readOnly) return;
+      event.preventDefault();
+      setContextMenu({ x: event.clientX, y: event.clientY });
+    },
+    [readOnly]
+  );
+
   // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -445,6 +706,7 @@ function VisualEditorInner({
     setSelectedNode(null);
     setSelectedEdge(null);
     setEditingNodeId(null);
+    setContextMenu(null);
   }, []);
 
   const onNodeDoubleClick = useCallback((_: unknown, node: Node) => {
@@ -575,6 +837,9 @@ function VisualEditorInner({
         onEdgeClick={onEdgeClick}
         onPaneClick={onPaneClick}
         onNodeDoubleClick={readOnly ? undefined : onNodeDoubleClick}
+        onNodeContextMenu={readOnly ? undefined : onNodeContextMenu}
+        onEdgeContextMenu={readOnly ? undefined : onEdgeContextMenu}
+        onPaneContextMenu={readOnly ? undefined : onPaneContextMenu}
         onDrop={onDrop}
         onDragOver={onDragOver}
         defaultEdgeOptions={defaultEdgeOptions}
@@ -662,6 +927,27 @@ function VisualEditorInner({
               );
               setEditingNodeId(null);
             }}
+          />
+        );
+      })()}
+
+      {contextMenu && !readOnly && (() => {
+        let items: ContextMenuItem[];
+        if (contextMenu.nodeId) {
+          items = buildNodeContextItems(contextMenu.nodeId);
+        } else if (contextMenu.edgeId) {
+          items = buildEdgeContextItems(contextMenu.edgeId);
+        } else {
+          const flowPos = reactFlowInstance.screenToFlowPosition({ x: contextMenu.x, y: contextMenu.y });
+          items = buildPaneContextItems(flowPos);
+        }
+        return (
+          <ContextMenu
+            x={contextMenu.x}
+            y={contextMenu.y}
+            items={items}
+            onClose={() => setContextMenu(null)}
+            theme={theme}
           />
         );
       })()}

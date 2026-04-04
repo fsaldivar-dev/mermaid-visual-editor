@@ -1,12 +1,14 @@
 import { Handle, Position, NodeResizer } from "@xyflow/react";
 
 interface NodeProps {
-  data: { label?: string; width?: number; height?: number };
+  data: { label?: string; width?: number; height?: number; fillColor?: string; borderColor?: string; fontColor?: string };
   selected?: boolean;
 }
 
 export function DiamondNode({ data, selected }: NodeProps) {
-  const color = selected ? "#ff9500" : "#ff9500";
+  const defaultColor = "#ff9500";
+  const strokeColor = data?.borderColor || defaultColor;
+  const fillColor = data?.fillColor || "var(--mve-bg, #fff)";
   return (
     <div
       className={`mve-node mve-diamond ${selected ? "mve-selected" : ""}`}
@@ -33,12 +35,12 @@ export function DiamondNode({ data, selected }: NodeProps) {
       >
         <polygon
           points="60,2 118,40 60,78 2,40"
-          fill="var(--mve-bg, #fff)"
-          stroke={color}
+          fill={fillColor}
+          stroke={selected ? "#ff9500" : strokeColor}
           strokeWidth="2"
         />
       </svg>
-      <span className="mve-diamond-label">{data?.label || ""}</span>
+      <span className="mve-diamond-label" style={data?.fontColor ? { color: data.fontColor } : undefined}>{data?.label || ""}</span>
     </div>
   );
 }

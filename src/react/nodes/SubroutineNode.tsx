@@ -1,12 +1,13 @@
 import { Handle, Position, NodeResizer } from "@xyflow/react";
 
 interface NodeProps {
-  data: { label?: string; width?: number; height?: number };
+  data: { label?: string; width?: number; height?: number; fillColor?: string; borderColor?: string; fontColor?: string };
   selected?: boolean;
 }
 
 export function SubroutineNode({ data, selected }: NodeProps) {
-  const color = selected ? "#ff9500" : "#6366f1";
+  const defaultColor = "#6366f1";
+  const color = selected ? "#ff9500" : (data?.borderColor || defaultColor);
   return (
     <div
       className={`mve-node mve-subroutine ${selected ? "mve-selected" : ""}`}
@@ -34,7 +35,7 @@ export function SubroutineNode({ data, selected }: NodeProps) {
         </defs>
         <rect
           x="1.5" y="1.5" width="157" height="45" rx="3" ry="3"
-          fill="var(--mve-bg, #fff)" stroke={color} strokeWidth="1.5"
+          fill={data?.fillColor || "var(--mve-bg, #fff)"} stroke={color} strokeWidth="1.5"
           strokeLinejoin="round" filter="url(#subroutine-shadow)"
         />
         <rect
@@ -43,7 +44,7 @@ export function SubroutineNode({ data, selected }: NodeProps) {
           strokeLinejoin="round"
         />
       </svg>
-      <span className="mve-shape-label">{data?.label || ""}</span>
+      <span className="mve-shape-label" style={data?.fontColor ? { color: data.fontColor } : undefined}>{data?.label || ""}</span>
     </div>
   );
 }

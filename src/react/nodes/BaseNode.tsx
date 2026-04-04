@@ -2,7 +2,7 @@ import { Handle, Position, NodeResizer } from "@xyflow/react";
 import type { ReactNode } from "react";
 
 interface BaseNodeProps {
-  data: { label?: string; width?: number; height?: number };
+  data: { label?: string; width?: number; height?: number; fillColor?: string; borderColor?: string; fontColor?: string };
   selected?: boolean;
   className: string;
   children?: ReactNode;
@@ -19,6 +19,9 @@ export function BaseNode({ data, selected, className, children, keepAspectRatio 
       style={{
         width: data?.width ? `${data.width}px` : undefined,
         height: data?.height ? `${data.height}px` : undefined,
+        ...(data?.fillColor ? { backgroundColor: data.fillColor } : {}),
+        ...(data?.borderColor ? { borderColor: data.borderColor } : {}),
+        ...(data?.fontColor ? { color: data.fontColor } : {}),
       }}
     >
       <NodeResizer
@@ -34,7 +37,7 @@ export function BaseNode({ data, selected, className, children, keepAspectRatio 
       <Handle type="source" position={Position.Bottom} id="bottom" className="mve-handle" />
       <Handle type="source" position={Position.Left} id="left" className="mve-handle" />
       <Handle type="source" position={Position.Right} id="right" className="mve-handle" />
-      {children || <span>{data?.label || ""}</span>}
+      {children || <span style={data?.fontColor ? { color: data.fontColor } : undefined}>{data?.label || ""}</span>}
     </div>
   );
 }

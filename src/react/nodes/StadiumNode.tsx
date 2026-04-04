@@ -1,12 +1,13 @@
 import { Handle, Position, NodeResizer } from "@xyflow/react";
 
 interface NodeProps {
-  data: { label?: string; width?: number; height?: number };
+  data: { label?: string; width?: number; height?: number; fillColor?: string; borderColor?: string; fontColor?: string };
   selected?: boolean;
 }
 
 export function StadiumNode({ data, selected }: NodeProps) {
-  const color = selected ? "#ff9500" : "#3b82f6";
+  const defaultColor = "#3b82f6";
+  const color = selected ? "#ff9500" : (data?.borderColor || defaultColor);
   return (
     <div
       className={`mve-node mve-stadium ${selected ? "mve-selected" : ""}`}
@@ -34,11 +35,11 @@ export function StadiumNode({ data, selected }: NodeProps) {
         </defs>
         <rect
           x="1.5" y="1.5" width="157" height="45" rx="22.5" ry="22.5"
-          fill="var(--mve-bg, #fff)" stroke={color} strokeWidth="1.5"
+          fill={data?.fillColor || "var(--mve-bg, #fff)"} stroke={color} strokeWidth="1.5"
           strokeLinejoin="round" filter="url(#stadium-shadow)"
         />
       </svg>
-      <span className="mve-shape-label">{data?.label || ""}</span>
+      <span className="mve-shape-label" style={data?.fontColor ? { color: data.fontColor } : undefined}>{data?.label || ""}</span>
     </div>
   );
 }
