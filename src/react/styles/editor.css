@@ -1934,3 +1934,27 @@
   border-color: #3a3a3c;
   color: #f5f5f7;
 }
+
+/* ── Mindmap ── */
+
+.mve-mindmap { width: 100%; height: 100%; }
+.mve-mindmap-node { cursor: pointer; transition: transform 0.2s; }
+.mve-mindmap-node:hover { transform: scale(1.05); }
+.mve-mindmap-node.selected rect,
+.mve-mindmap-node.selected circle { stroke: #ff9500; stroke-width: 2.5; }
+.mve-mindmap-link { fill: none; transition: opacity 0.2s; }
+.mve-mindmap-label { pointer-events: none; }
+
+/* ── ER Diagram ── */
+
+.mve-er-diagram { width: 100%; height: 100%; }
+.mve-er-entity { cursor: pointer; transition: filter 0.2s; }
+.mve-er-entity:hover { filter: brightness(0.98); }
+.mve-er-entity.selected rect:first-of-type { stroke: #ff9500; stroke-width: 2; }
+.mve-er-header-bg { fill: #eef2ff; }
+[data-theme="dark"] .mve-er-header-bg { fill: #312e81; }
+.mve-er-attr-row:hover { opacity: 0.8; }
+.mve-er-relation-line { fill: none; stroke: #94a3b8; stroke-width: 1.5; }
+.mve-er-relation-label { font-size: 11px; fill: #666; text-anchor: middle; }
+[data-theme="dark"] .mve-er-relation-label { fill: #999; }
+[data-theme="dark"] .mve-er-relation-line { stroke: #64748b; }

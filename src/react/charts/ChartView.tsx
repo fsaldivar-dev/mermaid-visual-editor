@@ -4,6 +4,8 @@ import { PieChartView } from "./PieChartView";
 import { GanttChartView } from "./GanttChartView";
 import { JourneyMapView } from "./JourneyMapView";
 import { TimelineView } from "./TimelineView";
+import { MindmapView } from "./MindmapView";
+import { ERDiagramView } from "./ERDiagramView";
 
 interface ChartViewProps {
   model: DiagramModel;
@@ -25,6 +27,10 @@ export function ChartView({ model, onModelChange, theme = "light" }: ChartViewPr
       return <JourneyMapView {...commonProps} />;
     case "timeline":
       return <TimelineView {...commonProps} />;
+    case "mindmap":
+      return <MindmapView {...commonProps} />;
+    case "er":
+      return <ERDiagramView {...commonProps} />;
     default:
       return (
         <div style={{ padding: 24, textAlign: "center", color: "#999" }}>
