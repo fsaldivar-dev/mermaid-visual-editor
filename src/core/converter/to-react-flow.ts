@@ -49,6 +49,7 @@ export function toReactFlow(model: DiagramModel): ReactFlowData {
   });
 
   const isER = model.type === "er";
+  const isMindmap = model.type === "mindmap";
 
   const edges: Edge[] = model.connections.map((conn) => {
     const relationshipType = conn.properties.relationshipType as string | undefined;
@@ -112,10 +113,24 @@ export function toReactFlow(model: DiagramModel): ReactFlowData {
       markerStart = { type: "arrowclosed" as const };
     }
 
+    // Mindmap edges: no arrows, bezier curves, branch-colored
+    if (isMindmap) {
+      markerEndType = "none";
+      markerEnd = undefined;
+      markerStart = undefined;
+      const sourceElement = model.elements.find(el => el.id === conn.source);
+      if (sourceElement?.properties.branchIndex !== undefined) {
+        const branchColors = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#06b6d4", "#84cc16"];
+        const branchColor = branchColors[(sourceElement.properties.branchIndex as number) % branchColors.length];
+        conn.properties.strokeColor = branchColor;
+      }
+    }
+
     const properties = { ...conn.properties };
     if (markerEndType) properties.markerEndType = markerEndType;
     if (markerStartType) properties.markerStartType = markerStartType;
     if (lineStyle) properties.lineStyle = lineStyle;
+    if (isMindmap) properties.edgeStyle = "bezier";
 
     return {
       id: conn.id,
