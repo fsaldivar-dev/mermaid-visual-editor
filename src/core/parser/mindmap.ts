@@ -66,6 +66,8 @@ export function parseMindmap(text: string): DiagramModel {
     stack.push({ id, indent, branchIndex });
   }
 
+  applyRadialLayout(elements, connections);
+
   return {
     type: "mindmap",
     direction: "LR",
@@ -73,4 +75,50 @@ export function parseMindmap(text: string): DiagramModel {
     connections,
     metadata: {},
   };
+}
+
+function applyRadialLayout(elements: DiagramElement[], connections: DiagramConnection[]) {
+  if (elements.length === 0) return;
+
+  // Build adjacency: parent -> children
+  const children = new Map<string, string[]>();
+  for (const conn of connections) {
+    if (!children.has(conn.source)) children.set(conn.source, []);
+    children.get(conn.source)!.push(conn.target);
+  }
+
+  const root = elements[0]; // first element is root
+  const cx = 400, cy = 300;
+  const RADIUS_STEP = 200;
+
+  function layout(nodeId: string, centerX: number, centerY: number, startAngle: number, endAngle: number, radius: number) {
+    const el = elements.find(e => e.id === nodeId);
+    if (!el) return;
+
+    if (radius === 0) {
+      // Root node
+      el.position = { x: centerX, y: centerY };
+    } else {
+      const midAngle = (startAngle + endAngle) / 2;
+      el.position = {
+        x: centerX + radius * Math.cos(midAngle),
+        y: centerY + radius * Math.sin(midAngle),
+      };
+    }
+
+    const kids = children.get(nodeId) || [];
+    if (kids.length === 0) return;
+
+    const arcSpread = radius === 0 ? 2 * Math.PI : (endAngle - startAngle);
+    const angleStep = arcSpread / kids.length;
+    const baseAngle = radius === 0 ? -Math.PI : startAngle;
+
+    kids.forEach((childId, i) => {
+      const childStart = baseAngle + i * angleStep;
+      const childEnd = childStart + angleStep;
+      layout(childId, centerX, centerY, childStart, childEnd, radius + RADIUS_STEP);
+    });
+  }
+
+  layout(root.id, cx, cy, -Math.PI, Math.PI, 0);
 }

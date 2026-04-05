@@ -6,7 +6,7 @@ const NODE_HEIGHT = 60;
 const GROUP_PADDING = 40;
 
 // Diagram types that handle their own layout (positions set by parser)
-const SELF_LAYOUT_TYPES = new Set(["sequence", "pie"]);
+const SELF_LAYOUT_TYPES = new Set(["sequence", "pie", "mindmap"]);
 
 export function applyDagreLayout(model: DiagramModel): DiagramModel {
   if (!model.elements.length) return model;

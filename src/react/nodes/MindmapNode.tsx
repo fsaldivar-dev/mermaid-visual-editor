@@ -27,14 +27,18 @@ export function MindmapNode({ data, selected }: MindmapNodeProps) {
       className={`mve-node mve-mindmap-node ${nodeClass} ${selected ? "mve-selected" : ""}`}
       style={{
         borderColor: selected ? "#ff9500" : color,
-        backgroundColor: isRoot ? color : depth === 1 ? color + "20" : color + "10",
+        backgroundColor: isRoot ? color : depth === 1 ? `${color}25` : `${color}12`,
         color: isRoot ? "#fff" : undefined,
+        boxShadow: selected
+          ? `0 0 0 3px rgba(255,149,0,0.3), 0 4px 12px rgba(0,0,0,0.1)`
+          : `0 2px 8px ${color}20`,
       }}
     >
       <NodeResizer
         isVisible={!!selected}
-        minWidth={60}
-        minHeight={30}
+        minWidth={isRoot ? 80 : 60}
+        minHeight={isRoot ? 80 : 30}
+        keepAspectRatio={isRoot}
         handleClassName="mve-resize-handle"
         lineClassName="mve-resize-line"
       />
