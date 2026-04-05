@@ -264,10 +264,17 @@ function VisualEditorInner({
         y: 100 + Math.random() * 300,
       };
 
+      // For mindmap, new nodes default to depth 1 (child-sized, not root-sized)
+      const data: Record<string, unknown> = { label };
+      if (model.type === "mindmap") {
+        data.depth = 1;
+        data.branchIndex = 0;
+      }
+
       setNodes((nds) => {
         const updated = [
           ...nds,
-          { id, type, data: { label }, position: pos },
+          { id, type, data, position: pos },
         ];
         setTimeout(() => emitChange(updated, edges), 0);
         return updated;
