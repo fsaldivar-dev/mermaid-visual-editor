@@ -209,6 +209,25 @@ function VisualEditorInner({
         return;
       }
 
+      // For mindmap: when connecting, update child's depth and branchIndex
+      if (model.type === "mindmap" && connection.source && connection.target) {
+        setNodes((nds) => {
+          const sourceNode = nds.find((n) => n.id === connection.source);
+          if (!sourceNode) return nds;
+          const parentDepth = (sourceNode.data?.depth as number) || 0;
+          const parentBranch = (sourceNode.data?.branchIndex as number) || 0;
+          const childDepth = parentDepth + 1;
+          const childBranch = parentDepth === 0
+            ? edges.filter((e) => e.source === sourceNode.id).length
+            : parentBranch;
+
+          return nds.map((n) => {
+            if (n.id !== connection.target) return n;
+            return { ...n, data: { ...n.data, depth: childDepth, branchIndex: childBranch } };
+          });
+        });
+      }
+
       // Default: add edge with smart handle routing
       setEdges((eds) => {
         const newEdge = addEdge(
@@ -221,7 +240,7 @@ function VisualEditorInner({
         return updated;
       });
     },
-    [setEdges, setNodes, nodes, edges, emitChange, model.type]
+    [setEdges, setNodes, nodes, edges, emitChange, model.type, computeAllSmartEdges]
   );
 
   // Reconnect an existing edge to a different node
