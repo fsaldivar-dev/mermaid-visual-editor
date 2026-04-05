@@ -245,52 +245,6 @@ function VisualEditorInner({
         y: 100 + Math.random() * 300,
       };
 
-      // For mindmap: auto-connect to selected node (or root) and set depth/branchIndex
-      if (model.type === "mindmap") {
-        setNodes((nds) => {
-          // Find parent: selected node or root (first node)
-          const parentNode = selectedNode || nds[0];
-          if (!parentNode) {
-            const updated = [...nds, { id, type, data: { label, depth: 0, branchIndex: 0 }, position: pos }];
-            setTimeout(() => emitChange(updated, edges), 0);
-            return updated;
-          }
-
-          const parentDepth = (parentNode.data?.depth as number) || 0;
-          const parentBranch = (parentNode.data?.branchIndex as number) || 0;
-          const childDepth = parentDepth + 1;
-          // If parent is root, assign a new branchIndex based on existing children count
-          const childBranch = parentDepth === 0
-            ? edges.filter(e => e.source === parentNode.id).length
-            : parentBranch;
-
-          const newNode = {
-            id,
-            type,
-            data: { label, depth: childDepth, branchIndex: childBranch },
-            position: pos,
-          };
-
-          const updated = [...nds, newNode];
-          // Auto-create edge from parent to child
-          setEdges((eds) => {
-            const newEdge = {
-              id: `e_${id}`,
-              source: parentNode.id,
-              target: id,
-              type: "editable" as const,
-              style: { strokeWidth: 2 },
-              data: { edgeStyle: "bezier", markerEndType: "none" },
-            };
-            const updatedEdges = [...eds, newEdge];
-            setTimeout(() => emitChange(updated, updatedEdges), 0);
-            return updatedEdges;
-          });
-          return updated;
-        });
-        return;
-      }
-
       setNodes((nds) => {
         const updated = [
           ...nds,
@@ -300,7 +254,7 @@ function VisualEditorInner({
         return updated;
       });
     },
-    [setNodes, setEdges, edges, emitChange, readOnly, model.type, selectedNode]
+    [setNodes, edges, emitChange, readOnly]
   );
 
   // When user drops a connection on empty canvas, create a new node at that position
