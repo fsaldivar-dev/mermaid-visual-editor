@@ -264,10 +264,11 @@ function VisualEditorInner({
         y: 100 + Math.random() * 300,
       };
 
-      // For mindmap, new nodes default to depth 1 (child-sized, not root-sized)
+      // For mindmap: first node on empty canvas becomes root, otherwise child-sized
       const data: Record<string, unknown> = { label };
       if (model.type === "mindmap") {
-        data.depth = 1;
+        const hasNodes = nodes.length > 0;
+        data.depth = hasNodes ? 1 : 0;
         data.branchIndex = 0;
       }
 
@@ -312,6 +313,112 @@ function VisualEditorInner({
 
   const deleteSelected = useCallback(() => {
     if (readOnly) return;
+
+    // Mindmap: smart delete with tree restructuring
+    if (model.type === "mindmap") {
+      setNodes((nds) => {
+        const selectedIds = new Set(nds.filter((n) => n.selected).map((n) => n.id));
+        if (selectedIds.size === 0) {
+          // Maybe deleting edges only
+          setEdges((eds) => {
+            const filteredEdges = eds.filter((e) => !e.selected);
+            setTimeout(() => emitChange(nds, filteredEdges), 0);
+            return filteredEdges;
+          });
+          return nds;
+        }
+
+        setEdges((eds) => {
+          let updatedEdges = [...eds];
+          let updatedNodes = [...nds];
+
+          for (const deletedId of selectedIds) {
+            const deletedNode = updatedNodes.find((n) => n.id === deletedId);
+            if (!deletedNode) continue;
+
+            const isRoot = (deletedNode.data?.depth as number) === 0;
+            const childEdges = updatedEdges.filter((e) => e.source === deletedId);
+            const parentEdge = updatedEdges.find((e) => e.target === deletedId);
+            const childIds = childEdges.map((e) => e.target);
+
+            if (isRoot && childIds.length > 0) {
+              // Promote the child with the most direct sub-children to root
+              const childSubCounts = childIds.map((cid) => ({
+                id: cid,
+                count: updatedEdges.filter((e) => e.source === cid).length,
+              }));
+              childSubCounts.sort((a, b) => b.count - a.count);
+              const newRootId = childSubCounts[0].id;
+
+              // New root gets depth 0
+              updatedNodes = updatedNodes.map((n) => {
+                if (n.id === newRootId) {
+                  return { ...n, data: { ...n.data, depth: 0 } };
+                }
+                return n;
+              });
+
+              // Reconnect siblings to new root
+              for (const cid of childIds) {
+                if (cid === newRootId) continue;
+                updatedEdges.push({
+                  id: `e_reparent_${cid}_${Date.now().toString(36)}`,
+                  source: newRootId,
+                  target: cid,
+                  type: "editable",
+                  style: { strokeWidth: 2 },
+                  data: { edgeStyle: "bezier", markerEndType: "none" },
+                });
+              }
+            } else if (!isRoot && childIds.length > 0 && parentEdge) {
+              // Intermediate node: reconnect children to grandparent
+              const grandparentId = parentEdge.source;
+              for (const cid of childIds) {
+                updatedEdges.push({
+                  id: `e_reparent_${cid}_${Date.now().toString(36)}`,
+                  source: grandparentId,
+                  target: cid,
+                  type: "editable",
+                  style: { strokeWidth: 2 },
+                  data: { edgeStyle: "bezier", markerEndType: "none" },
+                });
+                // Update child depth
+                updatedNodes = updatedNodes.map((n) => {
+                  if (n.id === cid) {
+                    const parentNode = updatedNodes.find((p) => p.id === grandparentId);
+                    const newDepth = ((parentNode?.data?.depth as number) || 0) + 1;
+                    return { ...n, data: { ...n.data, depth: newDepth } };
+                  }
+                  return n;
+                });
+              }
+            }
+
+            // Remove edges connected to deleted node
+            updatedEdges = updatedEdges.filter(
+              (e) => e.source !== deletedId && e.target !== deletedId
+            );
+          }
+
+          // Remove deleted nodes
+          updatedNodes = updatedNodes.filter((n) => !selectedIds.has(n.id));
+
+          // If canvas is empty, first new node will be root (handled in addNode)
+          setTimeout(() => emitChange(updatedNodes, updatedEdges), 0);
+          // We need to return edges from setEdges and nodes from setNodes separately
+          // So we update nodes via a ref trick
+          return updatedEdges;
+        });
+
+        // Remove deleted nodes
+        return nds.filter((n) => !selectedIds.has(n.id));
+      });
+      setSelectedNode(null);
+      setSelectedEdge(null);
+      return;
+    }
+
+    // Default delete for non-mindmap
     setNodes((nds) => {
       const filtered = nds.filter((n) => !n.selected);
       setEdges((eds) => {
@@ -323,7 +430,7 @@ function VisualEditorInner({
     });
     setSelectedNode(null);
     setSelectedEdge(null);
-  }, [setNodes, setEdges, emitChange, readOnly]);
+  }, [setNodes, setEdges, emitChange, readOnly, model.type]);
 
   const updateNodeLabel = useCallback(
     (id: string, label: string) => {
