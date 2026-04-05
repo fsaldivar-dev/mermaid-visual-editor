@@ -64,7 +64,9 @@ const CATEGORIES_BY_TYPE: Record<string, ShapeCategory[]> = {
     ]},
   ],
   mindmap: [
-    { name: "Topics", shapes: [{ type: "rounded", label: "Topic", icon: "\u25cb" }] },
+    { name: "Nodes", shapes: [
+      { type: "mindmapNode", label: "Child Node", icon: "\u25cb" },
+    ]},
   ],
 };
 
